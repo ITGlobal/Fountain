@@ -7,10 +7,23 @@ namespace ITGlobal.Fountain.Builder.Typescript
     {
         public string Stringify(ContractFieldDesc fieldDesc, int ident)
         {
-            return $@"
-{Utils.Ident(ident)}// {fieldDesc.Description}
-{Utils.Ident(ident)}{fieldDesc.Name}: {fieldDesc.Type}
-";
+            return Utils.Ident($@"
+// {fieldDesc.Description}
+{fieldDesc.Name}: {FieldTypeStringify(fieldDesc.Type)}
+", ident);
+        }
+
+        private string FieldTypeStringify(ITypeDesc type)
+        {
+            switch (type)
+            {
+                case ContractDesc t:
+                    return $"{t.Name}";
+                case PrimitiveTypeDesc t:
+                    return $"{t.Key}";
+                default:
+                    return "any";
+            }
         }
     }
 }

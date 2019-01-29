@@ -14,11 +14,11 @@ namespace ITGlobal.Fountain.Builder.Typescript
 
         public string Stringify(ContractDesc contractDesc, int ident)
         {
-            return $@"
-{Utils.Ident(ident)}interface I{contractDesc.Name} {{
+            return Utils.Ident($@"
+interface I{contractDesc.Name} {{
 {string.Join("\n\n", contractDesc.Fields.Select((field) => this._fieldStringify.Stringify(field, ident+4)))}
-{Utils.Ident(ident)}}}
-";
+}}
+", ident);
         }
     }
 }
