@@ -2,32 +2,22 @@ using System.Collections.Generic;
 using System.Linq;
 using ITGlobal.Fountain.Parser;
 
-namespace Builder.Typescript
+namespace ITGlobal.Fountain.Builder.Typescript
 {
-    public class TypescriptContractStringify: IContractStringify
+    public class TypescriptContractStringify : IContractStringify
     {
-//        public const string TEMPLATE = @"
-//interface I{{ contract.Name }} {
-//    {{~ for field in contract.Fields ~}}
-//    {{ field.Key }}: {{ field.Value  }} 
-//    {{~ endfor ~}}
-//}
-//"
-        
-        public string Stringify(ContractDesc contractDesc)
+        private readonly IContractFieldStringify _fieldStringify;
+        public TypescriptContractStringify(IContractFieldStringify fieldStringify)
         {
-            return $@"
-interface I{contractDesc.Name} {{
-    {string.Join("\n\n", contractDesc.Fields.Select(StringifyField))}              
-}}
-";
+            this._fieldStringify = fieldStringify;
         }
 
-        private string StringifyField(KeyValuePair<string, ContractFieldDesc> pair)
+        public string Stringify(ContractDesc contractDesc, int ident)
         {
             return $@"
-// {pair.Value.Description}
-{pair.Key}: {pair.Value.Type}
+{Utils.Ident(ident)}interface I{contractDesc.Name} {{
+{string.Join("\n\n", contractDesc.Fields.Select((field) => this._fieldStringify.Stringify(field, ident+4)))}
+{Utils.Ident(ident)}}}
 ";
         }
     }

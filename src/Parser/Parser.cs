@@ -74,16 +74,16 @@ namespace ITGlobal.Fountain.Parser
             return new List<ContractEnumDesc>();
         }
 
-        private static Dictionary<string, ContractGenericDesc> ParseContractGenerics(Type t)
+        private static IEnumerable<ContractGenericDesc> ParseContractGenerics(Type t)
         {
-            return new Dictionary<string, ContractGenericDesc>();
+            return new List<ContractGenericDesc>();
         }
 
-        private static Dictionary<string, ContractFieldDesc> ParseContractFields(Type t)
+        private static IEnumerable<ContractFieldDesc> ParseContractFields(Type t)
         {
             return t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .Where(_ => _.GetCustomAttribute<ContractFieldAttribute>() != null)
-                .ToDictionary(_ => _.Name, _ => ParseContractOneField(_));
+                .Select(ParseContractOneField);
         }
 
         private static ContractFieldDesc ParseContractOneField(PropertyInfo property)

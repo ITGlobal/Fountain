@@ -1,11 +1,11 @@
 using ITGlobal.Fountain.Parser;
 using JetBrains.Annotations;
 
-namespace Builder
+namespace ITGlobal.Fountain.Builder
 {
     [PublicAPI]
     public interface IContractStringify
     {
-        string Stringify(ContractDesc contractDesc);
+        string Stringify(ContractDesc contractDesc, int ident);
     }
 }
