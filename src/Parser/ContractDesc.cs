@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ITGlobal.Fountain.Parser
@@ -11,5 +12,6 @@ namespace ITGlobal.Fountain.Parser
         public IEnumerable<ContractFieldDesc> Fields { get; set; }
         public IEnumerable<ContractGenericDesc> Generics { get; set; }
         public IEnumerable<ContractDesc> Bases { get; set; }
+        public Dictionary<string, Attribute> Metadata { get; set; }
     }
 }

@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 namespace ITGlobal.Fountain.Parser
 {
     [PublicAPI]
-    public static class Parser
+    public static class ParseAssebly
     {
         #region cache
 
@@ -43,7 +43,8 @@ namespace ITGlobal.Fountain.Parser
                 
         public static ITypeDesc Contract(Type t)
         {
-            var docAttr = t.GetCustomAttribute<DocumentationAttribute>();
+            var attrs = t.GetCustomAttributes().Where(_ => _.GetType().IsAssignableFrom(typeof(IBaseAttribute)));
+            var docAttr = attrs.FirstOrDefault(_ => _ is DocumentationAttribute) as DocumentationAttribute;
             return new ContractDesc
             {
                 Name = t.Name,
@@ -53,6 +54,7 @@ namespace ITGlobal.Fountain.Parser
                 Fields = ParseContractFields(t),
                 Generics = ParseContractGenerics(t),
                 Bases = ParseContractBases(t),
+                Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _)
             };
         }
         

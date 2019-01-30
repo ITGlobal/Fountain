@@ -3,14 +3,21 @@ using ITGlobal.Fountain.Parser;
 
 namespace ITGlobal.Fountain.Builder.Typescript
 {
-    public class TypescriptContractFieldStringify: IContractFieldStringify
+    public class TypescriptContractFieldStringify : IContractFieldStringify
     {
-        public string Stringify(ContractFieldDesc fieldDesc, int ident)
+        private readonly IEmitterOptions _options;
+
+        public TypescriptContractFieldStringify(IEmitterOptions options)
         {
-            return Utils.Ident($@"
+            _options = options;
+        }
+
+        public string Stringify(ContractFieldDesc fieldDesc)
+        {
+            return $@"
 // {fieldDesc.Description}
 {fieldDesc.Name}: {FieldTypeStringify(fieldDesc.Type)}
-", ident);
+";
         }
 
         private string FieldTypeStringify(ITypeDesc type)

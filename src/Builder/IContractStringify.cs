@@ -6,6 +6,6 @@ namespace ITGlobal.Fountain.Builder
     [PublicAPI]
     public interface IContractStringify
     {
-        string Stringify(ContractDesc contractDesc, int ident);
+        string Stringify(ContractDesc contractDesc);
     }
 }
