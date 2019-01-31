@@ -1,11 +1,13 @@
+using System;
 using System.Reflection;
 using JetBrains.Annotations;
 
 namespace ITGlobal.Fountain.Builder
 {
     [PublicAPI]
-    public interface IFileEmitter
+    public interface IFileEmitter<TOptions> where TOptions: IEmitterOptions
     {
-        void Emit(string output, Assembly assembly);
+        void Emit([NotNull]string output, [NotNull]Assembly assembly);
+        FileEmitter<TOptions> SetupOptions([NotNull]Action<TOptions> setup);
     }
 }

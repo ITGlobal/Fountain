@@ -1,6 +1,7 @@
 using System;
 using ITGlobal.Fountain.Parser;
 using JetBrains.Annotations;
+using Newtonsoft.Json.Serialization;
 
 namespace ITGlobal.Fountain.Builder
 {
@@ -15,6 +16,10 @@ namespace ITGlobal.Fountain.Builder
         IManyContractsWrapper ManyContractsWrapper { get; set; }
         IContractFieldStringify FieldStringify { get; set; }
         IContractStringify ContractStringify { get; set; }
-        
+        IParseAssembly Parser { get; set; }
+        NamingStrategy FieldNamingStrategy { get; set; }
+        NamingStrategy ContractNamingStrategy { get; set; }
+
+        void CheckOptions();
     }
 }

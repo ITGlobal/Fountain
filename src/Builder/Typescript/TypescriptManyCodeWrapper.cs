@@ -1,12 +1,10 @@
-using System;
-
 namespace ITGlobal.Fountain.Builder.Typescript
 {
     public class TypescriptManyCodeWrapper: IManyContractsWrapper
     {
-        private readonly IEmitterOptions _options;
+        private readonly TypescriptEmitterOptions _options;
 
-        public TypescriptManyCodeWrapper(IEmitterOptions options)
+        public TypescriptManyCodeWrapper(TypescriptEmitterOptions options)
         {
             _options = options;
         }
@@ -14,7 +12,7 @@ namespace ITGlobal.Fountain.Builder.Typescript
         public string WrapAll(string str)
         {
             return $@"
-declare module 'contracts' {{
+{NamespaceOrModule} {{
 {Utils.Ident(str, _options.IdentSize)}
 }} 
 ";
@@ -24,5 +22,9 @@ declare module 'contracts' {{
         {
             return str;
         }
+        
+        private string NamespaceOrModule => _options.TypescriptModuleType == TypescriptModuleType.Namespace
+            ? $"declare namespace {_options.Namespace}"
+            : $"declare module '{_options.Module}'";
     }
 }

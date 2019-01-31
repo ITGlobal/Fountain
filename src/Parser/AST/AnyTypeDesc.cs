@@ -2,5 +2,6 @@
 {
     public class AnyTypeDesc: ITypeDesc
     {
+        public string Name { get; set; }
     }
 }

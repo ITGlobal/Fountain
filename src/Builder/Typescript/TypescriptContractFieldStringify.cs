@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using ITGlobal.Fountain.Parser;
 
 namespace ITGlobal.Fountain.Builder.Typescript
 {
     public class TypescriptContractFieldStringify : IContractFieldStringify
     {
+        
         private readonly IEmitterOptions _options;
 
         public TypescriptContractFieldStringify(IEmitterOptions options)
@@ -16,7 +19,7 @@ namespace ITGlobal.Fountain.Builder.Typescript
         {
             return $@"
 // {fieldDesc.Description}
-{fieldDesc.Name}: {FieldTypeStringify(fieldDesc.Type)}
+{fieldDesc.JsonProperty?.PropertyName ?? _options.FieldNamingStrategy.GetPropertyName(fieldDesc.Name, false)}: {FieldTypeStringify(fieldDesc.Type)}
 ";
         }
 
@@ -25,9 +28,25 @@ namespace ITGlobal.Fountain.Builder.Typescript
             switch (type)
             {
                 case ContractDesc t:
-                    return $"{t.Name}";
+                    return $"I{t.Name}";
                 case PrimitiveTypeDesc t:
-                    return $"{t.Key}";
+                    switch (t.Type)
+                    {
+                        case PrimitiveTypeDesc.Primitives.STRING:
+                            return "string";
+                        case PrimitiveTypeDesc.Primitives.BOOLEAN:
+                            return "boolean";
+                        case PrimitiveTypeDesc.Primitives.INT:
+                            return "number";
+                        case PrimitiveTypeDesc.Primitives.LONG:
+                            return "number";
+                        case PrimitiveTypeDesc.Primitives.DECIMAL:
+                            return "number";
+                        case PrimitiveTypeDesc.Primitives.DATETIME:
+                            return "string";
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 default:
                     return "any";
             }

@@ -5,25 +5,27 @@ using System.Linq;
 using System.Reflection;
 using ITGlobal.Fountain.Annotations;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace ITGlobal.Fountain.Parser
 {
     [PublicAPI]
-    public static class ParseAssebly
+    public class ParseAssebly: IParseAssembly
     {
         #region cache
 
-        private static readonly ConcurrentDictionary<string, PrimitiveTypeDesc> PrimitiveTypesCache
+        private readonly ConcurrentDictionary<string, PrimitiveTypeDesc> PrimitiveTypesCache
             = new ConcurrentDictionary<string, PrimitiveTypeDesc>();
 
         #endregion
         
-        public static ContractGroup Parse(Assembly assembly)
+        public virtual ContractGroup Parse(Assembly assembly)
         {
             return Parse(assembly.GetExportedTypes().Where(_ => _.GetCustomAttribute<ContractAttribute>() != null));
         }
         
-        public static ContractGroup Parse(IEnumerable<Type> types)
+        public virtual ContractGroup Parse(IEnumerable<Type> types)
         {
             return new ContractGroup
             {
@@ -41,7 +43,7 @@ namespace ITGlobal.Fountain.Parser
         #region parse concrete type
 
                 
-        public static ITypeDesc Contract(Type t)
+        public virtual ITypeDesc Contract(Type t)
         {
             var attrs = t.GetCustomAttributes().Where(_ => _.GetType().IsAssignableFrom(typeof(IBaseAttribute)));
             var docAttr = attrs.FirstOrDefault(_ => _ is DocumentationAttribute) as DocumentationAttribute;
@@ -53,80 +55,102 @@ namespace ITGlobal.Fountain.Parser
                 IsAbstract = t.IsAbstract,
                 Fields = ParseContractFields(t),
                 Generics = ParseContractGenerics(t),
-                Bases = ParseContractBases(t),
+                Base = ParseContractBase(t),
                 Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _)
             };
         }
         
-        private static ITypeDesc Primitive(string name)
+        public virtual ITypeDesc Primitive(PrimitiveTypeDesc.Primitives type)
         {
-            return PrimitiveTypesCache.GetOrAdd(name, key => new PrimitiveTypeDesc { Key = key });
+            return PrimitiveTypesCache.GetOrAdd(getName(), key => new PrimitiveTypeDesc { Name = key, Type = type});
+            
+            string getName() {
+                switch (type)
+                {
+                    case PrimitiveTypeDesc.Primitives.STRING:
+                        return "string";
+                    case PrimitiveTypeDesc.Primitives.BOOLEAN:
+                        return "bool";
+                    case PrimitiveTypeDesc.Primitives.INT:
+                        return "int";
+                    case PrimitiveTypeDesc.Primitives.LONG:
+                        return "long";
+                    case PrimitiveTypeDesc.Primitives.DECIMAL:
+                        return "decimal";
+                    case PrimitiveTypeDesc.Primitives.DATETIME:
+                        return "datetime";
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(type), type, null);
+                }
+            }
         }
 
         #endregion
 
         
-        private static IEnumerable<ContractDesc> ParseContractBases(Type t)
+        public virtual ContractDesc ParseContractBase(Type t)
         {
-            return new List<ContractDesc>();
+            return new ContractDesc();
         }
 
-        private static IEnumerable<ContractEnumDesc> ParseContractEnums(Type t)
+        public virtual IEnumerable<ContractEnumDesc> ParseContractEnums(Type t)
         {
             return new List<ContractEnumDesc>();
         }
 
-        private static IEnumerable<ContractGenericDesc> ParseContractGenerics(Type t)
+        public virtual IEnumerable<ContractGenericDesc> ParseContractGenerics(Type t)
         {
             return new List<ContractGenericDesc>();
         }
 
-        private static IEnumerable<ContractFieldDesc> ParseContractFields(Type t)
+        public virtual IEnumerable<ContractFieldDesc> ParseContractFields(Type t)
         {
             return t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .Where(_ => _.GetCustomAttribute<ContractFieldAttribute>() != null)
                 .Select(ParseContractOneField);
         }
 
-        private static ContractFieldDesc ParseContractOneField(PropertyInfo property)
+        public virtual ContractFieldDesc ParseContractOneField(PropertyInfo property)
         {
             var deprecation = property.GetCustomAttribute<DeprecatedAttribute>();
             var description = property.GetCustomAttribute<DocumentationAttribute>();
+            var jsonAttribute = property.GetCustomAttribute<JsonPropertyAttribute>();
             return new ContractFieldDesc
             {
                 Name = property.Name,
                 IsDeprecated = deprecation != null,
                 DeprecationCause = deprecation?.Cause,
                 Description = description?.Text,
+                JsonProperty = jsonAttribute,
                 Type = ParseTypeDesc(property.PropertyType)
             };
         }
 
-        private static ITypeDesc ParseTypeDesc(Type t)
+        public virtual ITypeDesc ParseTypeDesc(Type t)
         {
             if (t == typeof(bool))
             {
-                return Primitive("bool");
+                return Primitive(PrimitiveTypeDesc.Primitives.BOOLEAN);
             }
             if (t == typeof(string))
             {
-                return Primitive("string");
+                return Primitive(PrimitiveTypeDesc.Primitives.STRING);
             }
             if (t == typeof(int))
             {
-                return Primitive("int");
+                return Primitive(PrimitiveTypeDesc.Primitives.INT);
             }
             if (t == typeof(long))
             {
-                return Primitive("long");
+                return Primitive(PrimitiveTypeDesc.Primitives.LONG);
             }
             if (t == typeof(decimal))
             {
-                return Primitive("decimal");
+                return Primitive(PrimitiveTypeDesc.Primitives.DECIMAL);
             }
             if (t == typeof(DateTime))
             {
-                return Primitive("datetime");
+                return Primitive(PrimitiveTypeDesc.Primitives.DATETIME);
             }
 
             var contractAttr = t.GetCustomAttribute<ContractAttribute>();

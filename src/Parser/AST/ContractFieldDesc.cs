@@ -1,3 +1,6 @@
+using JetBrains.Annotations;
+using Newtonsoft.Json;
+
 namespace ITGlobal.Fountain.Parser
 {
     public class ContractFieldDesc
@@ -6,6 +9,7 @@ namespace ITGlobal.Fountain.Parser
         public bool IsDeprecated { get; set; }
         public string DeprecationCause { get; set; }
         public string Description { get; set; }
+        [CanBeNull] public JsonPropertyAttribute JsonProperty { get; set; }
         public ITypeDesc Type { get; set; }
     }
 }

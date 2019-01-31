@@ -1,18 +1,18 @@
 using System;
+using ITGlobal.Fountain.Builder.Typescript;
+using ITGlobal.Fountain.Parser;
+using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Serialization;
 
 namespace ITGlobal.Fountain.Builder
 {
-    public abstract class EmitterOptionsBuilder: IEmitterOptionsBuilder
+    public abstract class EmitterOptionsBuilder<TOptions>: IEmitterOptionsBuilder<TOptions> where TOptions: EmitterOptions, new()
     {
-        private readonly Action<EmitterOptionsBuilder, IEmitterOptions> _setup;
+        [CanBeNull] private readonly Action<EmitterOptionsBuilder<TOptions>> _setup;
         private readonly IServiceCollection _serviceCollection = new ServiceCollection();
-        protected readonly IEmitterOptions options = new EmitterOptions
-        {
-            IdentSize = 4,
-        };
 
-        public EmitterOptionsBuilder(Action<EmitterOptionsBuilder, IEmitterOptions> setup)
+        public EmitterOptionsBuilder([CanBeNull]Action<EmitterOptionsBuilder<TOptions>> setup = null)
         {
             _setup = setup;
         }
@@ -23,26 +23,28 @@ namespace ITGlobal.Fountain.Builder
         public abstract void SetManyContractsWrapper();
         public abstract void SetFieldStringify();
         public abstract void SetContractStringify();
+        public abstract void SetParser();
+        public abstract TOptions Build();
 
-        public IEmitterOptions Build()
+        public TOptions BuildBase(TOptions options)
         {
+            options.IdentSize = 4;
+            options.FieldNamingStrategy = new SnakeCaseNamingStrategy();
+            options.ContractNamingStrategy = new DefaultNamingStrategy();
             _serviceCollection.AddSingleton(options);
-            _setup(this, options);
+            _serviceCollection.AddSingleton<IEmitterOptions>(options);
+            _setup?.Invoke(this);
             
             var provider = _serviceCollection.BuildServiceProvider();
             options.PerFileContractWrapper = provider.GetService<IPerFileContractWrapper>();
             options.ManyContractsWrapper = provider.GetService<IManyContractsWrapper>();
             options.FieldStringify = provider.GetService<IContractFieldStringify>();
             options.ContractStringify = provider.GetService<IContractStringify>();
+            options.Parser = provider.GetService<IParseAssembly>();
             
             return options;
         }
 
-        public void SetCodeWrapper<T>() where T : class, ICodeWrapper
-        {
-            _serviceCollection.AddSingleton<ICodeWrapper, T>();
-        }
-        
         public void SetFieldStringify<T>() where T : class, IContractFieldStringify
         {
             _serviceCollection.AddSingleton<IContractFieldStringify, T>();
@@ -61,6 +63,11 @@ namespace ITGlobal.Fountain.Builder
         public void SetManyContractsWrapper<T>() where T : class, IManyContractsWrapper
         {
             _serviceCollection.AddSingleton<IManyContractsWrapper, T>();
+        }
+        
+        public void SetParser<T>() where T : class, IParseAssembly
+        {
+            _serviceCollection.AddSingleton<IParseAssembly, T>();
         }
 
     }

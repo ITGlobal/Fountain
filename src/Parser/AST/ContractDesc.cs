@@ -11,7 +11,7 @@ namespace ITGlobal.Fountain.Parser
         public bool IsAbstract { get; set; }
         public IEnumerable<ContractFieldDesc> Fields { get; set; }
         public IEnumerable<ContractGenericDesc> Generics { get; set; }
-        public IEnumerable<ContractDesc> Bases { get; set; }
+        public ContractDesc Base { get; set; }
         public Dictionary<string, Attribute> Metadata { get; set; }
     }
 }

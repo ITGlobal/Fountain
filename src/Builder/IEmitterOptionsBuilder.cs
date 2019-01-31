@@ -1,6 +1,6 @@
 namespace ITGlobal.Fountain.Builder
 {
-    public interface IEmitterOptionsBuilder
+    public interface IEmitterOptionsBuilder<out TOptions> where TOptions: IEmitterOptions
     {
         void SetFileTemplate();
         void SetIdentSize();
@@ -8,7 +8,8 @@ namespace ITGlobal.Fountain.Builder
         void SetManyContractsWrapper();
         void SetFieldStringify();
         void SetContractStringify();
+        void SetParser();
 
-        IEmitterOptions Build();
+        TOptions Build();
     }
 }

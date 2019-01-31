@@ -8,11 +8,16 @@ using JetBrains.Annotations;
 
 namespace ITGlobal.Fountain.Builder
 {
-    public class FileEmitter: IFileEmitter
+    public class FileEmitter<TOptions>: IFileEmitter<TOptions> where TOptions: IEmitterOptions
     {
-        private readonly IEmitterOptions _options;
+        private readonly TOptions _options;
 
-        public FileEmitter(IEmitterOptionsBuilder builder)
+        public FileEmitter(TOptions options)
+        {
+            _options = options;
+        }
+
+        public static FileEmitter<TOptions> Build(IEmitterOptionsBuilder<TOptions> builder)
         {
             builder.SetIdentSize();
             builder.SetFileTemplate();
@@ -20,12 +25,20 @@ namespace ITGlobal.Fountain.Builder
             builder.SetManyContractsWrapper();
             builder.SetFieldStringify();
             builder.SetContractStringify();
-            _options = builder.Build();
+            builder.SetParser();
+            return new FileEmitter<TOptions>(builder.Build());
         }
-        
+
+        public FileEmitter<TOptions> SetupOptions(Action<TOptions> setup)
+        {
+            setup(_options);
+            return this;
+        }
+
         public void Emit([NotNull]string output, [NotNull]Assembly assembly)
         {
-            var group = ParseAssebly.Parse(assembly);
+            _options.CheckOptions();
+            var group = _options.Parser.Parse(assembly);
             if (_options.FileTemplate != null)
             {
                 EmitFilePerContract(output, group);
@@ -105,7 +118,9 @@ namespace ITGlobal.Fountain.Builder
         {
             using (var file = CreateFileIfNotExist(filepath))
             {
-                var bytes = new UTF8Encoding(true).GetBytes(data);   
+                // clean file before write
+                file.SetLength(0);
+                var bytes = new UTF8Encoding(true).GetBytes(data);  
                 file.Write(bytes, 0, bytes.Length);
             }
         }
