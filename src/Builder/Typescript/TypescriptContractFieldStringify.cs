@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using ITGlobal.Fountain.Parser;
 
 namespace ITGlobal.Fountain.Builder.Typescript
@@ -17,10 +15,7 @@ namespace ITGlobal.Fountain.Builder.Typescript
 
         public string Stringify(ContractFieldDesc fieldDesc)
         {
-            return $@"
-// {fieldDesc.Description}
-{fieldDesc.JsonProperty?.PropertyName ?? _options.FieldNamingStrategy.GetPropertyName(fieldDesc.Name, false)}: {FieldTypeStringify(fieldDesc.Type)}
-";
+            return $@"{Description(fieldDesc)}{fieldDesc.JsonProperty?.PropertyName ?? _options.FieldNamingStrategy.GetPropertyName(fieldDesc.Name, false)}: {FieldTypeStringify(fieldDesc.Type)}";
         }
 
         private string FieldTypeStringify(ITypeDesc type)
@@ -51,5 +46,9 @@ namespace ITGlobal.Fountain.Builder.Typescript
                     return "any";
             }
         }
+        
+        private string Description(ContractFieldDesc fieldDesc) => string.IsNullOrWhiteSpace(fieldDesc.Description)
+            ? ""
+            : $@"// {fieldDesc.Description}{Environment.NewLine}";
     }
 }

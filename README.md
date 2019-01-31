@@ -2,7 +2,7 @@
 Code generation library for contracts
 
 ## Roadmap
-* Enums
+* + Enums
 * Generics
 * Optional
 * C# builder
@@ -10,3 +10,6 @@ Code generation library for contracts
 * FIlter by group
 * + camelCase dash_case settings
 * + Modular parser
+* - get summary as description
+* deprecation
+* parser cache

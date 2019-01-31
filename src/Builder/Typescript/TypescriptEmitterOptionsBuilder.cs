@@ -45,6 +45,16 @@ namespace ITGlobal.Fountain.Builder.Typescript
             SetParser<ParseAssebly>();
         }
 
+        public override void SetContractEnumStringify()
+        {
+            SetContractEnumStringify<TypescriptContractEnumStringify>();
+        }
+
+        public override void SetEnumFieldStringify()
+        {
+            SetEnumFieldStringify<TypescriptEnumFieldStringify>();
+        }
+
         public override TypescriptEmitterOptions Build()
         {
             return BuildBase(new TypescriptEmitterOptions(

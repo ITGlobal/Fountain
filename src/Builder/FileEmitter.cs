@@ -26,6 +26,8 @@ namespace ITGlobal.Fountain.Builder
             builder.SetFieldStringify();
             builder.SetContractStringify();
             builder.SetParser();
+            builder.SetEnumFieldStringify();
+            builder.SetContractEnumStringify();
             return new FileEmitter<TOptions>(builder.Build());
         }
 
@@ -60,6 +62,8 @@ namespace ITGlobal.Fountain.Builder
                     // render contract string
                     if (contract is ContractDesc cd)
                         contractStr = _options.ContractStringify.Stringify(cd);
+                    if (contract is ContractEnumDesc ed)
+                        contractStr = _options.ContractEnumStringify.Stringify(ed);
                     buffer.Add(_options.ManyContractsWrapper.WrapOne(contractStr));
                 }
             }

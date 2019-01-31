@@ -13,6 +13,8 @@ namespace ITGlobal.Fountain.Builder
         public IManyContractsWrapper ManyContractsWrapper { get; set; }
         public IContractFieldStringify FieldStringify { get; set; }
         public IContractStringify ContractStringify { get; set; }
+        public IContractEnumStringify ContractEnumStringify { get; set; }
+        public IEnumFieldStringify EnumFieldStringify { get; set; }
         public IParseAssembly Parser { get; set; }
         public NamingStrategy FieldNamingStrategy { get; set; }
         public NamingStrategy ContractNamingStrategy { get; set; }

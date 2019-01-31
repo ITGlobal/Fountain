@@ -12,7 +12,7 @@ namespace ITGlobal.Fountain.Parser
 {
     [PublicAPI]
     public class ParseAssebly: IParseAssembly
-    {
+    {      
         #region cache
 
         private readonly ConcurrentDictionary<string, PrimitiveTypeDesc> PrimitiveTypesCache
@@ -49,7 +49,7 @@ namespace ITGlobal.Fountain.Parser
             var docAttr = attrs.FirstOrDefault(_ => _ is DocumentationAttribute) as DocumentationAttribute;
             return new ContractDesc
             {
-                Name = t.Name,
+                Name = t.IsGenericType ? t.Name.Split('`')[0] : t.Name,
                 Description = docAttr?.Text,
                 IsGeneric = t.IsGenericType,
                 IsAbstract = t.IsAbstract,
@@ -85,6 +85,45 @@ namespace ITGlobal.Fountain.Parser
             }
         }
 
+        public virtual ITypeDesc Enum(Type t)
+        {
+            var documentation = t.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text ?? string.Empty;
+            var typeName = t.GetCustomAttribute<TypeNameAttribute>(inherit: false)?.Name ?? t.Name;
+            var isDeprecated = t.GetCustomAttribute<DeprecatedAttribute>(inherit: false) != null;
+
+            return new ContractEnumDesc
+            {
+                Name = typeName,
+                IsDeprecated = isDeprecated,
+                Description = documentation,
+                Values = EnumValueIterator().ToArray(),
+            };
+            
+            IEnumerable<EnumValueDesc> EnumValueIterator()
+            {
+                foreach (var value in System.Enum.GetValues(t))
+                {
+                    var member = t.GetMember(value.ToString()).FirstOrDefault();
+                    if (member == null)
+                    {
+                        continue;
+                    }
+
+                    var description = member.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text ?? string.Empty;
+                    var isMemberDeprecated = member.GetCustomAttribute<DeprecatedAttribute>(inherit: false) != null;
+ 
+                    yield return new EnumValueDesc
+                    {
+                        Description = description,
+                        IsDeprecated = isMemberDeprecated,
+                        EnumType = t,
+                        MemberInfo = member,
+                        Value = value,
+                    };
+                }
+            }
+        }
+
         #endregion
 
         
@@ -93,14 +132,17 @@ namespace ITGlobal.Fountain.Parser
             return new ContractDesc();
         }
 
-        public virtual IEnumerable<ContractEnumDesc> ParseContractEnums(Type t)
-        {
-            return new List<ContractEnumDesc>();
-        }
-
         public virtual IEnumerable<ContractGenericDesc> ParseContractGenerics(Type t)
         {
-            return new List<ContractGenericDesc>();
+            if (!t.IsGenericType) return new List<ContractGenericDesc>();
+
+            return t.GetGenericArguments().Select((gen) =>
+            {
+                return new ContractGenericDesc
+                {
+                    Name = gen.Name,
+                };
+            });
         }
 
         public virtual IEnumerable<ContractFieldDesc> ParseContractFields(Type t)
@@ -157,6 +199,11 @@ namespace ITGlobal.Fountain.Parser
             if (contractAttr == null)
             {
                 return new AnyTypeDesc();
+            }
+
+            if (t.IsEnum)
+            {
+                return Enum(t);
             }
             
             return Contract(t);
