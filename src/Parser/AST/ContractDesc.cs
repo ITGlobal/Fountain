@@ -3,15 +3,14 @@ using System.Collections.Generic;
 
 namespace ITGlobal.Fountain.Parser
 {
-    public class ContractDesc: ITypeDesc
+    public class ContractDesc: ITypeDesc, IDeprecatableDesc, IDescriptableDesc
     {
         public string Description { get; set; }
         public string Name { get; set; }
-        public bool IsGeneric { get; set; }
-        public bool IsAbstract { get; set; }
         public IEnumerable<ContractFieldDesc> Fields { get; set; }
-        public IEnumerable<ContractGenericDesc> Generics { get; set; }
         public ContractDesc Base { get; set; }
+        public bool IsDeprecated { get; set; }
+        public string DeprecationCause { get; set; }
         public Dictionary<string, Attribute> Metadata { get; set; }
     }
 }

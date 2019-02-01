@@ -11,12 +11,19 @@ using Newtonsoft.Json.Serialization;
 namespace ITGlobal.Fountain.Parser
 {
     [PublicAPI]
-    public class ParseAssebly: IParseAssembly
-    {      
+    public class ParserAssebly: IParserAssembly
+    {
+        private readonly IParserOptions _options;
+
+        public ParserAssebly(IParserOptions options)
+        {
+            _options = options;
+        }
+
         #region cache
 
-        private readonly ConcurrentDictionary<string, PrimitiveTypeDesc> PrimitiveTypesCache
-            = new ConcurrentDictionary<string, PrimitiveTypeDesc>();
+        private readonly ConcurrentDictionary<string, PrimitiveDesc> _primitiveTypesCache
+            = new ConcurrentDictionary<string, PrimitiveDesc>();
 
         #endregion
         
@@ -31,7 +38,12 @@ namespace ITGlobal.Fountain.Parser
             {
                 Groups =
                     types
-                        
+                        // генерики и абстрактные классы пропускаем т.к. их поля будут включены в результат
+                        .Where(_ => !_.IsGenericType && 
+                                    !_.IsAbstract && 
+                                    !_.IsInterface &&
+                                    // фильтруем контракты
+                                    _options.FilterContracts(_.GetCustomAttribute<ContractAttribute>()))
                         .GroupBy(_ => _.GetCustomAttribute<ContractAttribute>().Group).ToDictionary(
                         _ => _.Key,
                         _ => _.ToArray().Select(ParseTypeDesc)
@@ -45,56 +57,37 @@ namespace ITGlobal.Fountain.Parser
                 
         public virtual ITypeDesc Contract(Type t)
         {
-            var attrs = t.GetCustomAttributes().Where(_ => _.GetType().IsAssignableFrom(typeof(IBaseAttribute)));
+            var attrs = t.GetCustomAttributes().Where(_ => _ is IBaseAttribute);
             var docAttr = attrs.FirstOrDefault(_ => _ is DocumentationAttribute) as DocumentationAttribute;
+            var deprecatedAttribute = attrs.FirstOrDefault(_ => _ is DeprecatedAttribute) as DeprecatedAttribute;
             return new ContractDesc
             {
-                Name = t.IsGenericType ? t.Name.Split('`')[0] : t.Name,
+                Name = t.Name,
                 Description = docAttr?.Text,
-                IsGeneric = t.IsGenericType,
-                IsAbstract = t.IsAbstract,
                 Fields = ParseContractFields(t),
-                Generics = ParseContractGenerics(t),
                 Base = ParseContractBase(t),
+                IsDeprecated = deprecatedAttribute != null,
+                DeprecationCause = deprecatedAttribute?.Cause ?? string.Empty,
                 Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _)
             };
         }
         
-        public virtual ITypeDesc Primitive(PrimitiveTypeDesc.Primitives type)
+        public virtual ITypeDesc Primitive(PrimitiveDesc.Primitives type)
         {
-            return PrimitiveTypesCache.GetOrAdd(getName(), key => new PrimitiveTypeDesc { Name = key, Type = type});
-            
-            string getName() {
-                switch (type)
-                {
-                    case PrimitiveTypeDesc.Primitives.STRING:
-                        return "string";
-                    case PrimitiveTypeDesc.Primitives.BOOLEAN:
-                        return "bool";
-                    case PrimitiveTypeDesc.Primitives.INT:
-                        return "int";
-                    case PrimitiveTypeDesc.Primitives.LONG:
-                        return "long";
-                    case PrimitiveTypeDesc.Primitives.DECIMAL:
-                        return "decimal";
-                    case PrimitiveTypeDesc.Primitives.DATETIME:
-                        return "datetime";
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(type), type, null);
-                }
-            }
+            return _primitiveTypesCache.GetOrAdd(PrimitiveDesc.GetName(type), key => new PrimitiveDesc(type));
         }
 
         public virtual ITypeDesc Enum(Type t)
         {
             var documentation = t.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text ?? string.Empty;
             var typeName = t.GetCustomAttribute<TypeNameAttribute>(inherit: false)?.Name ?? t.Name;
-            var isDeprecated = t.GetCustomAttribute<DeprecatedAttribute>(inherit: false) != null;
+            var deprecatedEnumAttribute = t.GetCustomAttribute<DeprecatedAttribute>(inherit: false);
 
             return new ContractEnumDesc
             {
                 Name = typeName,
-                IsDeprecated = isDeprecated,
+                IsDeprecated = deprecatedEnumAttribute != null,
+                DeprecationCause = deprecatedEnumAttribute?.Cause ?? string.Empty,
                 Description = documentation,
                 Values = EnumValueIterator().ToArray(),
             };
@@ -110,12 +103,13 @@ namespace ITGlobal.Fountain.Parser
                     }
 
                     var description = member.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text ?? string.Empty;
-                    var isMemberDeprecated = member.GetCustomAttribute<DeprecatedAttribute>(inherit: false) != null;
+                    var deprecatedAttribute = member.GetCustomAttribute<DeprecatedAttribute>(inherit: false);
  
                     yield return new EnumValueDesc
                     {
                         Description = description,
-                        IsDeprecated = isMemberDeprecated,
+                        IsDeprecated = deprecatedAttribute != null,
+                        DeprecationCause = deprecatedAttribute?.Cause ?? string.Empty,
                         EnumType = t,
                         MemberInfo = member,
                         Value = value,
@@ -124,32 +118,50 @@ namespace ITGlobal.Fountain.Parser
             }
         }
 
-        #endregion
+        public virtual ArrayDesc Array(Type t)
+        {
+            return new ArrayDesc
+            {
+                ElementType = ParseTypeDesc(t.GetElementType())
+            }; 
+        }
 
-        
+        public virtual DictionaryDesc Dictionary(Type t)
+        {
+            var keyType = t.GetGenericArguments()[0];
+            var valueType = t.GetGenericArguments()[1];
+            return new DictionaryDesc
+            {
+                KeyType = ParseTypeDesc(keyType),
+                ValueType = ParseTypeDesc(valueType),
+            };
+        }
+
+        public virtual NullableDesc Null(Type t)
+        {
+            return new NullableDesc
+            {
+                ElementType = ParseTypeDesc(Nullable.GetUnderlyingType(t) ?? t),
+            };
+        }
+
+        #endregion
+   
         public virtual ContractDesc ParseContractBase(Type t)
         {
             return new ContractDesc();
         }
 
-        public virtual IEnumerable<ContractGenericDesc> ParseContractGenerics(Type t)
-        {
-            if (!t.IsGenericType) return new List<ContractGenericDesc>();
-
-            return t.GetGenericArguments().Select((gen) =>
-            {
-                return new ContractGenericDesc
-                {
-                    Name = gen.Name,
-                };
-            });
-        }
-
         public virtual IEnumerable<ContractFieldDesc> ParseContractFields(Type t)
         {
-            return t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(_ => _.GetCustomAttribute<ContractFieldAttribute>() != null)
+            var selfTypeFields = t.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(_ =>
+                {
+                    var attr = _.GetCustomAttribute<ContractFieldAttribute>();
+                    return attr != null && _options.FilterFields(attr);
+                })
                 .Select(ParseContractOneField);
+            return selfTypeFields;
         }
 
         public virtual ContractFieldDesc ParseContractOneField(PropertyInfo property)
@@ -157,48 +169,82 @@ namespace ITGlobal.Fountain.Parser
             var deprecation = property.GetCustomAttribute<DeprecatedAttribute>();
             var description = property.GetCustomAttribute<DocumentationAttribute>();
             var jsonAttribute = property.GetCustomAttribute<JsonPropertyAttribute>();
+            var mayBeMissingAttribute = property.GetCustomAttribute<MayBeMissingAttribute>();
+            var canBeNull = property.GetCustomAttribute<CanBeNullAttribute>() != null;
+            var typeDesc = ParseTypeDesc(property.PropertyType);
             return new ContractFieldDesc
             {
                 Name = property.Name,
                 IsDeprecated = deprecation != null,
-                DeprecationCause = deprecation?.Cause,
+                DeprecationCause = deprecation?.Cause ?? string.Empty,
+                MayBeMissing = mayBeMissingAttribute != null,
                 Description = description?.Text,
                 JsonProperty = jsonAttribute,
-                Type = ParseTypeDesc(property.PropertyType)
+                // if property marked by CanBeNull attribute, but property type isn't nullable, create NullableDesc
+                Type = canBeNull && !(typeDesc is NullableDesc) ? new NullableDesc { ElementType = typeDesc } : typeDesc, 
             };
         }
 
         public virtual ITypeDesc ParseTypeDesc(Type t)
         {
+            if (IsNullable(t))
+            {
+                return Null(t);
+            }
             if (t == typeof(bool))
             {
-                return Primitive(PrimitiveTypeDesc.Primitives.BOOLEAN);
+                return Primitive(PrimitiveDesc.Primitives.BOOLEAN);
             }
             if (t == typeof(string))
             {
-                return Primitive(PrimitiveTypeDesc.Primitives.STRING);
+                return Primitive(PrimitiveDesc.Primitives.STRING);
             }
             if (t == typeof(int))
             {
-                return Primitive(PrimitiveTypeDesc.Primitives.INT);
+                return Primitive(PrimitiveDesc.Primitives.INT);
             }
             if (t == typeof(long))
             {
-                return Primitive(PrimitiveTypeDesc.Primitives.LONG);
+                return Primitive(PrimitiveDesc.Primitives.LONG);
             }
             if (t == typeof(decimal))
             {
-                return Primitive(PrimitiveTypeDesc.Primitives.DECIMAL);
+                return Primitive(PrimitiveDesc.Primitives.DECIMAL);
+            }
+            if (t == typeof(float))
+            {
+                return Primitive(PrimitiveDesc.Primitives.FLOAT);
+            }
+            if (t == typeof(ushort))
+            {
+                return Primitive(PrimitiveDesc.Primitives.USHORT);
             }
             if (t == typeof(DateTime))
             {
-                return Primitive(PrimitiveTypeDesc.Primitives.DATETIME);
+                return Primitive(PrimitiveDesc.Primitives.DATETIME);
+            }
+            if (t == typeof(byte))
+            {
+                return Primitive(PrimitiveDesc.Primitives.BYTE);
+            }
+
+            if (t.IsArray)
+            {
+                return Array(t);
+            }
+
+            if (t.IsConstructedGenericType)
+            {
+                if (t.Name.Contains("Dictionary"))
+                {
+                    return Dictionary(t);
+                }
             }
 
             var contractAttr = t.GetCustomAttribute<ContractAttribute>();
             if (contractAttr == null)
             {
-                return new AnyTypeDesc();
+                return new AnyDesc();
             }
 
             if (t.IsEnum)
@@ -209,7 +255,10 @@ namespace ITGlobal.Fountain.Parser
             return Contract(t);
         }
 
-
-
+        private bool IsNullable(Type t)
+        {
+            var canBeNullAttribute = t.GetCustomAttribute<CanBeNullAttribute>();
+            return canBeNullAttribute != null || Nullable.GetUnderlyingType(t) != null;
+        }
     }
 }

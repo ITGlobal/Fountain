@@ -9,30 +9,24 @@ namespace ITGlobal.Fountain.Builder.Typescript
     {
         private readonly IContractFieldStringify _fieldStringify;
         private readonly TypescriptEmitterOptions _options;
+        private readonly TypescriptJsDocComments _jsDoc;
 
-        public TypescriptContractStringify(IContractFieldStringify fieldStringify, TypescriptEmitterOptions options)
+        public TypescriptContractStringify(IContractFieldStringify fieldStringify, TypescriptEmitterOptions options,
+            TypescriptJsDocComments jsDoc)
         {
             _fieldStringify = fieldStringify;
             _options = options;
+            _jsDoc = jsDoc;
         }
 
         public string Stringify(ContractDesc contractDesc)
         {
-            return $@"{Description(contractDesc)}{Export}interface I{_options.ContractNamingStrategy.GetPropertyName(contractDesc.Name, false)}{Generic(contractDesc)} {{
-{string.Join(Environment.NewLine+Environment.NewLine, contractDesc.Fields.Select((field) => Utils.Ident(_fieldStringify.Stringify(field), _options.IdentSize)))}
+            return
+                $@"{_jsDoc.Format(contractDesc)}{Export}interface I{_options.ContractNameTempate(contractDesc)} {{
+{string.Join(Environment.NewLine + Environment.NewLine, contractDesc.Fields.Select((field) => Utils.Ident(_fieldStringify.Stringify(field), _options.IdentSize)))}
 }}";
         }
 
-        private string Generic(ContractDesc contractDesc)
-        {
-            var genericsList = string.Join(", ", contractDesc.Generics.Select(_ => _.Name));
-            return contractDesc.IsGeneric ? $"<{genericsList}>" : "";
-        }
-
         private string Export => _options.TypescriptModuleType == TypescriptModuleType.Module ? "export " : "";
-        
-        private string Description(ContractDesc contractDesc) => string.IsNullOrWhiteSpace(contractDesc.Description)
-            ? ""
-            : $@"// {contractDesc.Description}{Environment.NewLine}";
     }
 }

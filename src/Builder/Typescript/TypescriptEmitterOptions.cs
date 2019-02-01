@@ -15,7 +15,8 @@ namespace ITGlobal.Fountain.Builder.Typescript
             base.CheckOptions();
             if (TypescriptModuleType == TypescriptModuleType.Module && FileTemplate != null)
             {
-                throw new BuilderException("Perfile contracts to module not suppotred");
+                throw new CheckOptionsException(new[] {nameof(TypescriptModuleType), nameof(FileTemplate)},
+                    "Perfile contracts to module not suppotred");
             }
         }
     }

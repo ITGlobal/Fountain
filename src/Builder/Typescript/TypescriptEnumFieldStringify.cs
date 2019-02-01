@@ -8,14 +8,16 @@ namespace ITGlobal.Fountain.Builder.Typescript
 {
     public class TypescriptEnumFieldStringify: IEnumFieldStringify
     {
+        private readonly TypescriptJsDocComments _jsDoc;
+
+        public TypescriptEnumFieldStringify(TypescriptJsDocComments jsDoc)
+        {
+            _jsDoc = jsDoc;
+        }
         public string Stringify(EnumValueDesc field)
         {
-            return $@"{Description(field)}| '{Convert(field)}'";
+            return $@"{_jsDoc.Format(field)}| '{Convert(field)}'";
         }
-
-        private string Description(EnumValueDesc field) => string.IsNullOrWhiteSpace(field.Description)
-            ? ""
-            : $@"// {field.Description}{Environment.NewLine}";
 
         private string Convert(EnumValueDesc field)
         {

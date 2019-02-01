@@ -7,23 +7,22 @@ using Newtonsoft.Json.Serialization;
 
 namespace ITGlobal.Fountain.Builder
 {
-    public abstract class EmitterOptionsBuilder<TOptions> : IEmitterOptionsBuilder<TOptions>
+    public abstract class EmitterOptionsBuilder<TOptions> : IEmitterOptionsBuilder<TOptions>, IEmitterOptionsBuilderSetup
         where TOptions : EmitterOptions, new()
     {
-        [CanBeNull] private readonly Action<EmitterOptionsBuilder<TOptions>> _setup;
-        private readonly IServiceCollection _serviceCollection = new ServiceCollection();
+        [CanBeNull] private readonly Action<IEmitterOptionsBuilderSetup> _setup;
+        protected readonly IServiceCollection _serviceCollection = new ServiceCollection();
 
-        public EmitterOptionsBuilder([CanBeNull] Action<EmitterOptionsBuilder<TOptions>> setup = null)
+        public EmitterOptionsBuilder([CanBeNull] Action<IEmitterOptionsBuilderSetup> setup = null)
         {
             _setup = setup;
         }
 
-        public abstract void SetFileTemplate();
-        public abstract void SetIdentSize();
         public abstract void SetOneContractWrapper();
         public abstract void SetManyContractsWrapper();
         public abstract void SetFieldStringify();
         public abstract void SetContractStringify();
+        public abstract void SetParserOptions();
         public abstract void SetParser();
         public abstract void SetContractEnumStringify();
         public abstract void SetEnumFieldStringify();
@@ -32,8 +31,8 @@ namespace ITGlobal.Fountain.Builder
         public TOptions BuildBase(TOptions options)
         {
             options.IdentSize = 4;
-            options.FieldNamingStrategy = new SnakeCaseNamingStrategy();
-            options.ContractNamingStrategy = new DefaultNamingStrategy();
+            options.FieldNamingStrategy = new DefaultNamingStrategy();
+            options.ContractNameTempate = (contract) => contract.Name;
             _serviceCollection.AddSingleton(options);
             _serviceCollection.AddSingleton<IEmitterOptions>(options);
             _setup?.Invoke(this);
@@ -43,7 +42,8 @@ namespace ITGlobal.Fountain.Builder
             options.ManyContractsWrapper = provider.GetService<IManyContractsWrapper>();
             options.FieldStringify = provider.GetService<IContractFieldStringify>();
             options.ContractStringify = provider.GetService<IContractStringify>();
-            options.Parser = provider.GetService<IParseAssembly>();
+            options.ParserOptions = provider.GetService<IParserOptions>();
+            options.Parser = provider.GetService<IParserAssembly>();
             options.ContractEnumStringify = provider.GetService<IContractEnumStringify>();
             options.EnumFieldStringify = provider.GetService<IEnumFieldStringify>();
 
@@ -70,9 +70,15 @@ namespace ITGlobal.Fountain.Builder
             _serviceCollection.AddSingleton<IManyContractsWrapper, T>();
         }
 
-        public void SetParser<T>() where T : class, IParseAssembly
+        public void SetParserOptions<T>() where T : class, IParserOptions
         {
-            _serviceCollection.AddSingleton<IParseAssembly, T>();
+            _serviceCollection.AddSingleton<T>();
+            _serviceCollection.AddSingleton<IParserOptions, T>();
+        }
+
+        public void SetParser<T>() where T : class, IParserAssembly
+        {
+            _serviceCollection.AddSingleton<IParserAssembly, T>();
         }
 
         public void SetContractEnumStringify<T>() where T : class, IContractEnumStringify

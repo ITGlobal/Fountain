@@ -17,27 +17,13 @@ namespace ITGlobal.Fountain.Builder
             _options = options;
         }
 
-        public static FileEmitter<TOptions> Build(IEmitterOptionsBuilder<TOptions> builder)
-        {
-            builder.SetIdentSize();
-            builder.SetFileTemplate();
-            builder.SetOneContractWrapper();
-            builder.SetManyContractsWrapper();
-            builder.SetFieldStringify();
-            builder.SetContractStringify();
-            builder.SetParser();
-            builder.SetEnumFieldStringify();
-            builder.SetContractEnumStringify();
-            return new FileEmitter<TOptions>(builder.Build());
-        }
-
         public FileEmitter<TOptions> SetupOptions(Action<TOptions> setup)
         {
             setup(_options);
             return this;
         }
 
-        public void Emit([NotNull]string output, [NotNull]Assembly assembly)
+        public void Emit(string output, Assembly assembly)
         {
             _options.CheckOptions();
             var group = _options.Parser.Parse(assembly);
@@ -68,7 +54,7 @@ namespace ITGlobal.Fountain.Builder
                 }
             }
 
-            var result = string.Join(Environment.NewLine, buffer);
+            var result = string.Join(Environment.NewLine+Environment.NewLine, buffer);
             var wrappedStr = _options.ManyContractsWrapper.WrapAll(result);
             var filename = _options.Filename;
             if (filename == null)
@@ -94,6 +80,8 @@ namespace ITGlobal.Fountain.Builder
                     // render contract string
                     if (contract is ContractDesc cd)
                         contractStr = _options.ContractStringify.Stringify(cd);
+                    if (contract is ContractEnumDesc ed)
+                        contractStr = _options.ContractEnumStringify.Stringify(ed);
 
                     var wrappedStr = _options.PerFileContractWrapper.Wrap(contractStr);
                     var filename = _options.FileTemplate(group.Key, contract);

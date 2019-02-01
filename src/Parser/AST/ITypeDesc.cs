@@ -2,6 +2,6 @@ namespace ITGlobal.Fountain.Parser
 {
     public interface ITypeDesc
     {
-        string Name { get; set; }
+        string Name { get; }
     }
 }

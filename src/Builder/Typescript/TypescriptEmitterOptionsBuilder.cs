@@ -1,23 +1,14 @@
 using System;
 using ITGlobal.Fountain.Parser;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ITGlobal.Fountain.Builder.Typescript
 {
     public class TypescriptEmitterOptionsBuilder : EmitterOptionsBuilder<TypescriptEmitterOptions>
     {
-        public TypescriptEmitterOptionsBuilder([CanBeNull]Action<EmitterOptionsBuilder<TypescriptEmitterOptions>> setup = null) : base(setup)
+        public TypescriptEmitterOptionsBuilder([CanBeNull]Action<IEmitterOptionsBuilderSetup> setup = null) : base(setup)
         {
-        }
-
-        public override void SetFileTemplate()
-        {
-            // нет настроек по умолчанию
-        }
-
-        public override void SetIdentSize()
-        {
-            // нет настроек по умолчанию
         }
 
         public override void SetOneContractWrapper()
@@ -40,9 +31,14 @@ namespace ITGlobal.Fountain.Builder.Typescript
             SetContractStringify<TypescriptContractStringify>();
         }
 
+        public override void SetParserOptions()
+        {
+            SetParserOptions<ParserOptionsDefault>();
+        }
+
         public override void SetParser()
         {
-            SetParser<ParseAssebly>();
+            SetParser<ParserAssebly>();
         }
 
         public override void SetContractEnumStringify()
@@ -57,8 +53,8 @@ namespace ITGlobal.Fountain.Builder.Typescript
 
         public override TypescriptEmitterOptions Build()
         {
-            return BuildBase(new TypescriptEmitterOptions(
-            ));
+            _serviceCollection.AddSingleton<TypescriptJsDocComments>();
+            return BuildBase(new TypescriptEmitterOptions());
         }
     }
 }

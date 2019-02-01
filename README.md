@@ -3,7 +3,7 @@ Code generation library for contracts
 
 ## Roadmap
 * + Enums
-* Generics
+* + Generics
 * Optional
 * C# builder
 * Filter by permission
@@ -13,3 +13,5 @@ Code generation library for contracts
 * - get summary as description
 * deprecation
 * parser cache
+* support perfile modules for typescript
+* parser - group by base class
