@@ -25,6 +25,12 @@ namespace ITGlobal.Fountain.Parser
         private readonly ConcurrentDictionary<string, PrimitiveDesc> _primitiveTypesCache
             = new ConcurrentDictionary<string, PrimitiveDesc>();
 
+        private readonly ConcurrentDictionary<string, ITypeDesc> _contractCache
+            = new ConcurrentDictionary<string, ITypeDesc>();
+        
+        private readonly ConcurrentDictionary<string, ContractEnumDesc> _enumCache
+            = new ConcurrentDictionary<string, ContractEnumDesc>();
+        
         #endregion
         
         public virtual ContractGroup Parse(Assembly assembly)
@@ -38,9 +44,8 @@ namespace ITGlobal.Fountain.Parser
             {
                 Groups =
                     types
-                        // генерики и абстрактные классы пропускаем т.к. их поля будут включены в результат
-                        .Where(_ => !_.IsGenericType && 
-                                    !_.IsAbstract && 
+                        // абстрактные классы пропускаем т.к. их поля будут включены в результат
+                        .Where(_ => !_.IsAbstract && 
                                     !_.IsInterface &&
                                     // фильтруем контракты
                                     _options.FilterContracts(_.GetCustomAttribute<ContractAttribute>()))
@@ -57,19 +62,35 @@ namespace ITGlobal.Fountain.Parser
                 
         public virtual ITypeDesc Contract(Type t)
         {
-            var attrs = t.GetCustomAttributes().Where(_ => _ is IBaseAttribute);
-            var docAttr = attrs.FirstOrDefault(_ => _ is DocumentationAttribute) as DocumentationAttribute;
-            var deprecatedAttribute = attrs.FirstOrDefault(_ => _ is DeprecatedAttribute) as DeprecatedAttribute;
-            return new ContractDesc
+            return _contractCache.GetOrAdd(t.FullName, s =>
             {
-                Name = t.Name,
-                Description = docAttr?.Text,
-                Fields = ParseContractFields(t),
-                Base = ParseContractBase(t),
-                IsDeprecated = deprecatedAttribute != null,
-                DeprecationCause = deprecatedAttribute?.Cause ?? string.Empty,
-                Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _)
-            };
+                var attrs = t.GetCustomAttributes().Where(_ => _ is IBaseAttribute);
+                var docAttr = attrs.FirstOrDefault(_ => _ is DocumentationAttribute) as DocumentationAttribute;
+                var deprecatedAttribute = attrs.FirstOrDefault(_ => _ is DeprecatedAttribute) as DeprecatedAttribute;
+                var isGeneric = t.IsGenericType;
+
+                if (isGeneric)
+                {
+                    return new GenericDesc
+                    {
+                        Name = t.Name.Split('`')[0],
+                        IsDeprecated = deprecatedAttribute != null,
+                        DeprecationCause = deprecatedAttribute?.Cause ?? string.Empty,
+                        Description = docAttr?.Text,
+                    };
+                }
+                
+                return new ContractDesc
+                {
+                    Name = t.Name,
+                    Description = docAttr?.Text,
+                    Fields = ParseContractFields(t),
+                    Base = ParseContractBase(t),
+                    IsDeprecated = deprecatedAttribute != null,
+                    DeprecationCause = deprecatedAttribute?.Cause ?? string.Empty,
+                    Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _)
+                };
+            });
         }
         
         public virtual ITypeDesc Primitive(PrimitiveDesc.Primitives type)
@@ -79,19 +100,22 @@ namespace ITGlobal.Fountain.Parser
 
         public virtual ITypeDesc Enum(Type t)
         {
-            var documentation = t.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text ?? string.Empty;
-            var typeName = t.GetCustomAttribute<TypeNameAttribute>(inherit: false)?.Name ?? t.Name;
-            var deprecatedEnumAttribute = t.GetCustomAttribute<DeprecatedAttribute>(inherit: false);
-
-            return new ContractEnumDesc
+            return _enumCache.GetOrAdd(t.FullName, s =>
             {
-                Name = typeName,
-                IsDeprecated = deprecatedEnumAttribute != null,
-                DeprecationCause = deprecatedEnumAttribute?.Cause ?? string.Empty,
-                Description = documentation,
-                Values = EnumValueIterator().ToArray(),
-            };
-            
+                var documentation = t.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text ?? string.Empty;
+                var typeName = t.GetCustomAttribute<TypeNameAttribute>(inherit: false)?.Name ?? t.Name;
+                var deprecatedEnumAttribute = t.GetCustomAttribute<DeprecatedAttribute>(inherit: false);
+
+                return new ContractEnumDesc
+                {
+                    Name = typeName,
+                    IsDeprecated = deprecatedEnumAttribute != null,
+                    DeprecationCause = deprecatedEnumAttribute?.Cause ?? string.Empty,
+                    Description = documentation,
+                    Values = EnumValueIterator().ToArray(),
+                };
+            });
+
             IEnumerable<EnumValueDesc> EnumValueIterator()
             {
                 foreach (var value in System.Enum.GetValues(t))
@@ -146,10 +170,16 @@ namespace ITGlobal.Fountain.Parser
         }
 
         #endregion
-   
-        public virtual ContractDesc ParseContractBase(Type t)
+        
+        [CanBeNull]
+        public virtual ITypeDesc ParseContractBase(Type t)
         {
-            return new ContractDesc();
+            if (t.BaseType != null && t.BaseType.GetCustomAttribute<ContractAttribute>() == null)
+            {
+                return null;
+            }
+            
+            return ParseTypeDesc(t.BaseType);
         }
 
         public virtual IEnumerable<ContractFieldDesc> ParseContractFields(Type t)

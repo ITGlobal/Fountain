@@ -50,12 +50,15 @@ namespace ITGlobal.Fountain.Builder
                         contractStr = _options.ContractStringify.Stringify(cd);
                     if (contract is ContractEnumDesc ed)
                         contractStr = _options.ContractEnumStringify.Stringify(ed);
-                    buffer.Add(_options.ManyContractsWrapper.WrapOne(contractStr));
+                    if (!string.IsNullOrWhiteSpace(contractStr))
+                    {
+                        buffer.Add(_options.ManyContractsWrapper.WrapOne(contractStr));
+                    }
                 }
             }
 
             var result = string.Join(Environment.NewLine+Environment.NewLine, buffer);
-            var wrappedStr = _options.ManyContractsWrapper.WrapAll(result);
+            var wrappedStr = _options.ManyContractsWrapper.WrapAll(result, parsed);
             var filename = _options.Filename;
             if (filename == null)
             {
@@ -83,16 +86,18 @@ namespace ITGlobal.Fountain.Builder
                     if (contract is ContractEnumDesc ed)
                         contractStr = _options.ContractEnumStringify.Stringify(ed);
 
-                    var wrappedStr = _options.PerFileContractWrapper.Wrap(contractStr);
-                    var filename = _options.FileTemplate(group.Key, contract);
-                    if (filename == null)
+                    if (!string.IsNullOrWhiteSpace(contractStr))
                     {
-                        throw new Exception("filename must be defined");
+                        var wrappedStr = _options.PerFileContractWrapper.Wrap(contractStr);
+                        var filename = _options.FileTemplate(group.Key, contract);
+                        if (filename == null)
+                        {
+                            throw new Exception("filename must be defined");
+                        }
+                        var filepath = Path.Combine(output, filename);
+                        WriteToFile(filepath, wrappedStr);
                     }
-                    var filepath = Path.Combine(output, filename);
-                    WriteToFile(filepath, wrappedStr);
                 }
-                
             }
         }
 

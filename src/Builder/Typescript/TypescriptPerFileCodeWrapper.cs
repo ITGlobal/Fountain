@@ -20,7 +20,7 @@ namespace ITGlobal.Fountain.Builder.Typescript
 ";
         }
 
-        public string NamespaceOrModule => _options.TypescriptModuleType == TypescriptModuleType.Namespace
+        private string NamespaceOrModule => _options.TypescriptModuleType == TypescriptModuleType.Namespace
             ? $"declare namespace {_options.Namespace}"
             : $"declare module '{_options.Module}'";
     }
