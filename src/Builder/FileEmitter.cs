@@ -88,7 +88,7 @@ namespace ITGlobal.Fountain.Builder
 
                     if (!string.IsNullOrWhiteSpace(contractStr))
                     {
-                        var wrappedStr = _options.PerFileContractWrapper.Wrap(contractStr);
+                        var wrappedStr = _options.PerFileContractWrapper.Wrap(contractStr, group.Key, contract);
                         var filename = _options.FileTemplate(group.Key, contract);
                         if (filename == null)
                         {

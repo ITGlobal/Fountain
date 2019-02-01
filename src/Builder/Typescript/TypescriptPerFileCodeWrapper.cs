@@ -1,4 +1,5 @@
 using System;
+using ITGlobal.Fountain.Parser;
 
 namespace ITGlobal.Fountain.Builder.Typescript
 {
@@ -11,7 +12,7 @@ namespace ITGlobal.Fountain.Builder.Typescript
             _options = options;
         }
 
-        public string Wrap(string str)
+        public string Wrap(string str, string group, ITypeDesc contract)
         {
             return $@"
 {NamespaceOrModule} {{
