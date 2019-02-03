@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ITGlobal.Fountain.Parser
@@ -9,5 +10,6 @@ namespace ITGlobal.Fountain.Parser
         public IEnumerable<EnumValueDesc> Values { get; set; }
         public bool IsDeprecated { get; set; }
         public string DeprecationCause { get; set; }
+        public Type JsonConverterType { get; set; }
     }
 }

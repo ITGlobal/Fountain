@@ -6,6 +6,9 @@ namespace ITGlobal.Fountain.Builder.Cshapr
 {
     public class CsharpEmitterOptions : EmitterOptions
     {
-        [NotNull] public Func<string, ITypeDesc, string> CsharpNamespaceTemplate { get; set; } = (group, desc) => $"Contracts.{group}";
+        [NotNull] public Func<string, ITypeDesc, string> CsharpNamespaceTemplatePerFile { get; set; } = 
+            (group, desc) => $"Contracts.{Utils.Capitalize(group)}";
+
+        [NotNull] public string CsharpNamespaceOneFile { get; set; } = "Contracts";
     }
 }

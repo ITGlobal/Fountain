@@ -22,7 +22,7 @@ namespace ITGlobal.Fountain.Builder.Typescript
         {
             return
                 $@"{_jsDoc.Format(contractDesc)}{Export}type I{_options.ContractNameTempate(contractDesc)} =
-{string.Join(Environment.NewLine, contractDesc.Values.Select((field) => Utils.Ident(_enumFieldStringify.Stringify(field), _options.IdentSize)))}";
+{string.Join(Environment.NewLine, contractDesc.Values.Select(field => Utils.Ident(_enumFieldStringify.Stringify(field), _options.IdentSize)))}";
         }
 
         private string Export => _options.TypescriptModuleType == TypescriptModuleType.Module ? "export " : "";

@@ -1,6 +1,7 @@
 using System;
 using ITGlobal.Fountain.Parser;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace ITGlobal.Fountain.Builder.Cshapr
@@ -53,6 +54,7 @@ namespace ITGlobal.Fountain.Builder.Cshapr
 
         public override CsharpEmitterOptions Build()
         {
+            _serviceCollection.AddSingleton<CsharpTemplateContext>();
             return BuildBase(new CsharpEmitterOptions());
         }
     }

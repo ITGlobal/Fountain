@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using ITGlobal.Fountain.Annotations;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
@@ -75,7 +76,7 @@ namespace ITGlobal.Fountain.Parser
                     {
                         Name = t.Name.Split('`')[0],
                         IsDeprecated = deprecatedAttribute != null,
-                        DeprecationCause = deprecatedAttribute?.Cause ?? string.Empty,
+                        DeprecationCause = deprecatedAttribute?.Cause,
                         Description = docAttr?.Text,
                     };
                 }
@@ -87,7 +88,7 @@ namespace ITGlobal.Fountain.Parser
                     Fields = ParseContractFields(t),
                     Base = ParseContractBase(t),
                     IsDeprecated = deprecatedAttribute != null,
-                    DeprecationCause = deprecatedAttribute?.Cause ?? string.Empty,
+                    DeprecationCause = deprecatedAttribute?.Cause,
                     Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _)
                 };
             });
@@ -102,16 +103,18 @@ namespace ITGlobal.Fountain.Parser
         {
             return _enumCache.GetOrAdd(t.FullName, s =>
             {
-                var documentation = t.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text ?? string.Empty;
+                var documentation = t.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text;
                 var typeName = t.GetCustomAttribute<TypeNameAttribute>(inherit: false)?.Name ?? t.Name;
                 var deprecatedEnumAttribute = t.GetCustomAttribute<DeprecatedAttribute>(inherit: false);
-
+                var jsonConverter = t.GetCustomAttribute<JsonConverterAttribute>();
+                
                 return new ContractEnumDesc
                 {
                     Name = typeName,
                     IsDeprecated = deprecatedEnumAttribute != null,
-                    DeprecationCause = deprecatedEnumAttribute?.Cause ?? string.Empty,
+                    DeprecationCause = deprecatedEnumAttribute?.Cause,
                     Description = documentation,
+                    JsonConverterType = jsonConverter?.ConverterType,
                     Values = EnumValueIterator().ToArray(),
                 };
             });
@@ -126,16 +129,18 @@ namespace ITGlobal.Fountain.Parser
                         continue;
                     }
 
-                    var description = member.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text ?? string.Empty;
+                    var description = member.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text;
+                    var enumMember = member.GetCustomAttribute<EnumMemberAttribute>(inherit: false)?.Value;
                     var deprecatedAttribute = member.GetCustomAttribute<DeprecatedAttribute>(inherit: false);
  
                     yield return new EnumValueDesc
                     {
                         Description = description,
                         IsDeprecated = deprecatedAttribute != null,
-                        DeprecationCause = deprecatedAttribute?.Cause ?? string.Empty,
+                        DeprecationCause = deprecatedAttribute?.Cause,
                         EnumType = t,
                         MemberInfo = member,
+                        EnumMember = enumMember,
                         Value = value,
                     };
                 }
@@ -206,10 +211,10 @@ namespace ITGlobal.Fountain.Parser
             {
                 Name = property.Name,
                 IsDeprecated = deprecation != null,
-                DeprecationCause = deprecation?.Cause ?? string.Empty,
+                DeprecationCause = deprecation?.Cause,
                 MayBeMissing = mayBeMissingAttribute != null,
                 Description = description?.Text,
-                JsonProperty = jsonAttribute,
+                JsonProperty = jsonAttribute?.PropertyName,
                 // if property marked by CanBeNull attribute, but property type isn't nullable, create NullableDesc
                 Type = canBeNull && !(typeDesc is NullableDesc) ? new NullableDesc { ElementType = typeDesc } : typeDesc, 
             };
