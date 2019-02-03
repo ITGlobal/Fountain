@@ -3,11 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Serialization;
 using ITGlobal.Fountain.Annotations;
+using ITGlobal.Fountain.Annotations.Validation;
+using ITGlobal.Fountain.Parser.Validation;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace ITGlobal.Fountain.Parser
 {
@@ -207,6 +207,7 @@ namespace ITGlobal.Fountain.Parser
             var mayBeMissingAttribute = property.GetCustomAttribute<MayBeMissingAttribute>();
             var canBeNull = property.GetCustomAttribute<CanBeNullAttribute>() != null;
             var typeDesc = ParseTypeDesc(property.PropertyType);
+            
             return new ContractFieldDesc
             {
                 Name = property.Name,
@@ -216,8 +217,25 @@ namespace ITGlobal.Fountain.Parser
                 Description = description?.Text,
                 JsonName = jsonName?.Name,
                 // if property marked by CanBeNull attribute, but property type isn't nullable, create NullableDesc
-                Type = canBeNull && !(typeDesc is NullableDesc) ? new NullableDesc { ElementType = typeDesc } : typeDesc, 
+                Type = canBeNull && !(typeDesc is NullableDesc) ? new NullableDesc { ElementType = typeDesc } : typeDesc,
+                Validation = ParseContractOneFieldValidation(property)
+                    .Where(_ => _options.ValidationDestinationFilter(_.Destination))
             };
+        }
+
+        public virtual IEnumerable<IFieldValidation> ParseContractOneFieldValidation(PropertyInfo property)
+        {
+            var requiredAttr = property.GetCustomAttribute<RequiredAttribute>();
+            if (requiredAttr != null)
+            {
+                yield return new RequiredValidation { Destination = requiredAttr.Destination };
+            }
+            
+            var emailAttr = property.GetCustomAttribute<EmailAttribute>();
+            if (emailAttr != null)
+            {
+                yield return new EmailValidation { Destination = emailAttr.Destination };
+            }
         }
 
         public virtual ITypeDesc ParseTypeDesc(Type t)

@@ -8,5 +8,6 @@ namespace ITGlobal.Fountain.Parser
     {
         [NotNull] Func<ContractAttribute, bool> FilterContracts { get; set; }
         [NotNull] Func<ContractFieldAttribute, bool> FilterFields { get; set; }
+        [NotNull] Func<string, bool> ValidationDestinationFilter { get; set; }
     }
 }

@@ -1,6 +1,6 @@
-using System.Collections;
+using System.Collections.Generic;
+using ITGlobal.Fountain.Parser.Validation;
 using JetBrains.Annotations;
-using Newtonsoft.Json;
 
 namespace ITGlobal.Fountain.Parser
 {
@@ -13,5 +13,6 @@ namespace ITGlobal.Fountain.Parser
         public bool MayBeMissing { get; set; }
         [CanBeNull] public string JsonName { get; set; }
         public ITypeDesc Type { get; set; }
+        public IEnumerable<IFieldValidation> Validation { get; set; }
     }
 }

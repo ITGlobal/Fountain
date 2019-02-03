@@ -3,7 +3,7 @@ using System;
 namespace ITGlobal.Fountain.Annotations
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum | AttributeTargets.Field | AttributeTargets.Property)]
-    public sealed class TypeNameAttribute : Attribute
+    public sealed class TypeNameAttribute : Attribute, IBaseAttribute
     {
         public TypeNameAttribute(string name)
         {

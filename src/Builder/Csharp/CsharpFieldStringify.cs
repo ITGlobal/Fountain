@@ -1,5 +1,10 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using ITGlobal.Fountain.Builder.Exceptions;
 using ITGlobal.Fountain.Parser;
+using ITGlobal.Fountain.Parser.Validation;
 using Scriban;
 
 namespace ITGlobal.Fountain.Builder.Csharp
@@ -27,6 +32,9 @@ namespace ITGlobal.Fountain.Builder.Csharp
 {{~ if is_nullable ~}}
 [CanBeNull]
 {{~ end ~}}
+{{~ for v in validations ~}}
+{{ v }}
+{{~ end ~}}
 public {{prop_type}} {{name}} { get; set; }");
         }
         
@@ -40,7 +48,8 @@ public {{prop_type}} {{name}} { get; set; }");
                 fieldDesc.DeprecationCause,
                 JsonProperty = fieldDesc.JsonName,
                 IsNullable = fieldDesc.Type is NullableDesc,
-                PropType = FieldTypeStringify(fieldDesc.Type)
+                PropType = FieldTypeStringify(fieldDesc.Type),
+                Validations = fieldDesc.Validation.Select(ValidationStringify)
             });
         }
         
@@ -90,12 +99,25 @@ public {{prop_type}} {{name}} { get; set; }");
                             ptype = "byte";
                             break;
                         default:
-                            throw new ArgumentOutOfRangeException();
+                            throw new BuilderException("unknow primitive type");
                     }
 
                     return isNullable ? $"{ptype}?" : ptype;
                 default:
                     return typeof(object).Name;
+            }
+        }
+
+        private string ValidationStringify(IFieldValidation validation)
+        {
+            switch (validation)
+            {
+                case RequiredValidation v:
+                    return "[Required]";
+                case EmailValidation v:
+                    return "[EmailAddress]";
+                default:
+                    throw new BuilderException("unknow validation type");
             }
         }
     }

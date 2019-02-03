@@ -17,6 +17,7 @@ namespace ITGlobal.Fountain.Builder.Csharp
                 @"using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
