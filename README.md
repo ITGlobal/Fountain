@@ -5,7 +5,7 @@ Code generation library for contracts
 * + Enums
 * + Generics
 * + Optional
-* C# builder
+* + C# builder
 * + Filter by permission
 * + FIlter by group
 * + camelCase dash_case settings

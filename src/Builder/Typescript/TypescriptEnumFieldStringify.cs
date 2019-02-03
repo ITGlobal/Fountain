@@ -1,8 +1,4 @@
-using System;
-using System.Reflection;
 using ITGlobal.Fountain.Parser;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace ITGlobal.Fountain.Builder.Typescript
 {
@@ -21,15 +17,16 @@ namespace ITGlobal.Fountain.Builder.Typescript
 
         private string Convert(EnumValueDesc field)
         {
-            var jsonConverterAttr = field.EnumType.GetCustomAttribute<JsonConverterAttribute>();
-            if (jsonConverterAttr == null) return field.Value.ToString();
-            
-            var json = JsonConvert.SerializeObject(field.Value, field.EnumType, new JsonSerializerSettings
-            {
-                Converters = { (JsonConverter)Activator.CreateInstance(jsonConverterAttr.ConverterType) },
-            });
-            var str = JToken.Parse(json).Value<string>();
-            return str;
+            return field.JsonName ?? field.Value.ToString();
+//            var jsonConverterAttr = field.EnumType.GetCustomAttribute<JsonConverterAttribute>();
+//            if (jsonConverterAttr == null) return field.Value.ToString();
+//            
+//            var json = JsonConvert.SerializeObject(field.Value, field.EnumType, new JsonSerializerSettings
+//            {
+//                Converters = { (JsonConverter)Activator.CreateInstance(jsonConverterAttr.ConverterType) },
+//            });
+//            var str = JToken.Parse(json).Value<string>();
+//            return str;
         }
     }
 }

@@ -1,11 +1,7 @@
-using System;
-using System.Reflection;
 using ITGlobal.Fountain.Parser;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Scriban;
 
-namespace ITGlobal.Fountain.Builder.Cshapr
+namespace ITGlobal.Fountain.Builder.Csharp
 {
     public class CsharpEnumFieldStringify: IEnumFieldStringify
     {
@@ -24,8 +20,8 @@ namespace ITGlobal.Fountain.Builder.Cshapr
 {{~ if is_deprecated ~}}
 [Obsolete(""{{ deprecation_cause }}"")]
 {{~ end ~}}
-{{~ if enum_member ~}}
-[EnumMember(Value = ""{{ enum_member }}"")]
+{{~ if json_name ~}}
+[EnumMember(Value = ""{{ json_name }}"")]
 {{~ end ~}}
 {{name}},");
         }
@@ -37,7 +33,7 @@ namespace ITGlobal.Fountain.Builder.Cshapr
                 field.Description,
                 field.IsDeprecated,
                 field.DeprecationCause,
-                field.EnumMember,
+                field.JsonName,
                 Name = field.Value.ToString(),
             });
         }

@@ -2,7 +2,7 @@ using System;
 using ITGlobal.Fountain.Parser;
 using JetBrains.Annotations;
 
-namespace ITGlobal.Fountain.Builder.Cshapr
+namespace ITGlobal.Fountain.Builder.Csharp
 {
     public class CsharpEmitterOptions : EmitterOptions
     {

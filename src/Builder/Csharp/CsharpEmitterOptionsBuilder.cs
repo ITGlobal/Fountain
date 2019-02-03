@@ -3,8 +3,7 @@ using ITGlobal.Fountain.Parser;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 
-
-namespace ITGlobal.Fountain.Builder.Cshapr
+namespace ITGlobal.Fountain.Builder.Csharp
 {
     public class CsharpEmitterOptionsBuilder: EmitterOptionsBuilder<CsharpEmitterOptions>
     {

@@ -22,7 +22,7 @@ namespace ITGlobal.Fountain.Builder.Typescript
 
         private string FieldName(ContractFieldDesc fieldDesc)
         {
-            return fieldDesc.JsonProperty ??
+            return fieldDesc.JsonName ??
                    _options.FieldNamingStrategy.GetPropertyName(fieldDesc.Name, false);
         }
 

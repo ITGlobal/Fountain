@@ -1,21 +1,20 @@
-using System;
 using ITGlobal.Fountain.Parser;
 using Scriban;
 
-namespace ITGlobal.Fountain.Builder.Cshapr
+namespace ITGlobal.Fountain.Builder.Csharp
 {
-    public class CsharpOneContractWrapper : IPerFileContractWrapper
+    public class CsharpManyContractsWrapper: IManyContractsWrapper
     {
         private readonly CsharpEmitterOptions _options;
         private readonly CsharpTemplateContext _contextMaker;
         private readonly Template _template;
 
-        public CsharpOneContractWrapper(CsharpEmitterOptions options, CsharpTemplateContext contextMaker)
+        public CsharpManyContractsWrapper(CsharpEmitterOptions options, CsharpTemplateContext contextMaker)
         {
             _options = options;
             _contextMaker = contextMaker;
             _template = Template.Parse(
-@"using System;
+                @"using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using JetBrains.Annotations;
@@ -23,19 +22,23 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace {{ namespace }} {
-{{ contract | ident }}
+{{ contracts | ident }}
 }");
         }
-
-        public string Wrap(string str, string group, ITypeDesc contract)
+        public string WrapAll(string str, ContractGroup @group)
         {
             return _template.Render(
                 _contextMaker.Make(new
                 {
-                    Namespace = _options.CsharpNamespaceTemplatePerFile(group, contract),
-                    Contract = str
+                    Namespace = _options.CsharpNamespaceOneFile,
+                    Contracts = str
                 })
             );
+        }
+
+        public string WrapOne(string str)
+        {
+            return str;
         }
     }
 }

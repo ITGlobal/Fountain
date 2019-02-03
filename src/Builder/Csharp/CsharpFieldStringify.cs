@@ -2,7 +2,7 @@ using System;
 using ITGlobal.Fountain.Parser;
 using Scriban;
 
-namespace ITGlobal.Fountain.Builder.Cshapr
+namespace ITGlobal.Fountain.Builder.Csharp
 {
     public class CsharpFieldStringify: IContractFieldStringify
     {
@@ -38,7 +38,7 @@ public {{prop_type}} {{name}} { get; set; }");
                 fieldDesc.Description,
                 Name = _options.FieldNamingStrategy.GetPropertyName(fieldDesc.Name, false),
                 fieldDesc.DeprecationCause,
-                fieldDesc.JsonProperty,
+                JsonProperty = fieldDesc.JsonName,
                 IsNullable = fieldDesc.Type is NullableDesc,
                 PropType = FieldTypeStringify(fieldDesc.Type)
             });

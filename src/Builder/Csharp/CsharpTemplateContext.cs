@@ -2,7 +2,7 @@ using System;
 using Scriban;
 using Scriban.Runtime;
 
-namespace ITGlobal.Fountain.Builder.Cshapr
+namespace ITGlobal.Fountain.Builder.Csharp
 {
     /// <summary>
     /// Common Scriban template context

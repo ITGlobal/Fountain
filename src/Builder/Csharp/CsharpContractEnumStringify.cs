@@ -2,16 +2,16 @@ using System.Linq;
 using ITGlobal.Fountain.Parser;
 using Scriban;
 
-namespace ITGlobal.Fountain.Builder.Cshapr
+namespace ITGlobal.Fountain.Builder.Csharp
 {
-    public class CsharpContractStringify: IContractStringify
+    public class CsharpContractEnumStringify: IContractEnumStringify
     {
-        private readonly IContractFieldStringify _fieldStringify;
+        private readonly IEnumFieldStringify _fieldStringify;
         private readonly CsharpEmitterOptions _options;
         private readonly CsharpTemplateContext _contextMaker;
-        private Template _template;
+        private readonly Template _template;
 
-        public CsharpContractStringify(IContractFieldStringify fieldStringify, CsharpEmitterOptions options, CsharpTemplateContext contextMaker)
+        public CsharpContractEnumStringify(IEnumFieldStringify fieldStringify, CsharpEmitterOptions options, CsharpTemplateContext contextMaker)
         {
             _fieldStringify = fieldStringify;
             _options = options;
@@ -24,7 +24,10 @@ namespace ITGlobal.Fountain.Builder.Cshapr
 {{~ if is_deprecated ~}}
 [Obsolete(""{{ deprecation_cause }}"")]
 {{~ end ~}}
-public class {{ class_name }} {
+{{~ if json_converter ~}}
+[JsonConverter(typeof({{ json_converter }}))]
+{{~ end ~}}
+public enum {{ enum_name }} {
 
 {{~ for field in fields ~}}
 {{ field | ident }}
@@ -33,15 +36,16 @@ public class {{ class_name }} {
 }");
         }
         
-        public string Stringify(ContractDesc contractDesc)
+        public string Stringify(ContractEnumDesc contractDesc)
         {
             return _template.Render(_contextMaker.Make(new
             {
                 contractDesc.Description,
                 contractDesc.IsDeprecated,
                 contractDesc.DeprecationCause,
-                ClassName = _options.ContractNameTempate(contractDesc),
-                Fields = contractDesc.Fields.Select(_fieldStringify.Stringify),
+                JsonConverter = contractDesc.JsonConverterType?.Name,
+                EnumName = _options.ContractNameTempate(contractDesc),
+                Fields = contractDesc.Values.Select(_fieldStringify.Stringify),
             }));
         }
     }

@@ -11,6 +11,6 @@ namespace ITGlobal.Fountain.Parser
         public object Value { get; set; }
         public MemberInfo MemberInfo { get; set; }
         public Type EnumType { get; set; }
-        public string EnumMember { get; set; }
+        public string JsonName { get; set; }
     }
 }

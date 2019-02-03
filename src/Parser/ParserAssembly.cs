@@ -130,7 +130,7 @@ namespace ITGlobal.Fountain.Parser
                     }
 
                     var description = member.GetCustomAttribute<DocumentationAttribute>(inherit: false)?.Text;
-                    var enumMember = member.GetCustomAttribute<EnumMemberAttribute>(inherit: false)?.Value;
+                    var jsonName = member.GetCustomAttribute<JsonNameAttribute>(inherit: false)?.Name;
                     var deprecatedAttribute = member.GetCustomAttribute<DeprecatedAttribute>(inherit: false);
  
                     yield return new EnumValueDesc
@@ -140,7 +140,7 @@ namespace ITGlobal.Fountain.Parser
                         DeprecationCause = deprecatedAttribute?.Cause,
                         EnumType = t,
                         MemberInfo = member,
-                        EnumMember = enumMember,
+                        JsonName = jsonName,
                         Value = value,
                     };
                 }
@@ -203,7 +203,7 @@ namespace ITGlobal.Fountain.Parser
         {
             var deprecation = property.GetCustomAttribute<DeprecatedAttribute>();
             var description = property.GetCustomAttribute<DocumentationAttribute>();
-            var jsonAttribute = property.GetCustomAttribute<JsonPropertyAttribute>();
+            var jsonName = property.GetCustomAttribute<JsonNameAttribute>();
             var mayBeMissingAttribute = property.GetCustomAttribute<MayBeMissingAttribute>();
             var canBeNull = property.GetCustomAttribute<CanBeNullAttribute>() != null;
             var typeDesc = ParseTypeDesc(property.PropertyType);
@@ -214,7 +214,7 @@ namespace ITGlobal.Fountain.Parser
                 DeprecationCause = deprecation?.Cause,
                 MayBeMissing = mayBeMissingAttribute != null,
                 Description = description?.Text,
-                JsonProperty = jsonAttribute?.PropertyName,
+                JsonName = jsonName?.Name,
                 // if property marked by CanBeNull attribute, but property type isn't nullable, create NullableDesc
                 Type = canBeNull && !(typeDesc is NullableDesc) ? new NullableDesc { ElementType = typeDesc } : typeDesc, 
             };
