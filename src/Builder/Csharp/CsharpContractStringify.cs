@@ -24,7 +24,7 @@ namespace ITGlobal.Fountain.Builder.Csharp
 {{~ if is_deprecated ~}}
 [Obsolete(""{{ deprecation_cause }}"")]
 {{~ end ~}}
-public class {{ class_name }} {
+public {{ if can_be_partial }}partial {{ end }}class {{ class_name }} {
 
 {{~ for field in fields ~}}
 {{ field | ident }}
@@ -42,6 +42,7 @@ public class {{ class_name }} {
                 contractDesc.DeprecationCause,
                 ClassName = _options.ContractNameTempate(contractDesc),
                 Fields = contractDesc.Fields.Select(_fieldStringify.Stringify),
+                contractDesc.CanBePartial,
             }));
         }
     }

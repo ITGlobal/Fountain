@@ -13,5 +13,10 @@ namespace ITGlobal.Fountain.Annotations
 
         public string Group { get; }
         public string Permission { get; }
+        
+        /// <summary>
+        /// need for C# classes
+        /// </summary>
+        public bool CanBePartial { get; set; } = false;
     }
 }

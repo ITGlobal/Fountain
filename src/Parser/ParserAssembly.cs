@@ -68,6 +68,7 @@ namespace ITGlobal.Fountain.Parser
                 var attrs = t.GetCustomAttributes().Where(_ => _ is IBaseAttribute);
                 var docAttr = attrs.FirstOrDefault(_ => _ is DocumentationAttribute) as DocumentationAttribute;
                 var deprecatedAttribute = attrs.FirstOrDefault(_ => _ is DeprecatedAttribute) as DeprecatedAttribute;
+                var contractAttribute = attrs.FirstOrDefault(_ => _ is ContractAttribute) as ContractAttribute;
                 var isGeneric = t.IsGenericType;
 
                 if (isGeneric)
@@ -78,6 +79,7 @@ namespace ITGlobal.Fountain.Parser
                         IsDeprecated = deprecatedAttribute != null,
                         DeprecationCause = deprecatedAttribute?.Cause,
                         Description = docAttr?.Text,
+                        CanBePartial = contractAttribute?.CanBePartial ?? false,
                     };
                 }
                 
@@ -89,7 +91,8 @@ namespace ITGlobal.Fountain.Parser
                     Base = ParseContractBase(t),
                     IsDeprecated = deprecatedAttribute != null,
                     DeprecationCause = deprecatedAttribute?.Cause,
-                    Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _)
+                    Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _),
+                    CanBePartial = contractAttribute?.CanBePartial ?? false,
                 };
             });
         }

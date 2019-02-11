@@ -13,5 +13,6 @@ namespace ITGlobal.Fountain.Parser
         public bool IsDeprecated { get; set; }
         public string DeprecationCause { get; set; }
         public Dictionary<string, Attribute> Metadata { get; set; }
+        public bool CanBePartial { get; set; }
     }
 }
