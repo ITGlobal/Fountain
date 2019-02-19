@@ -208,7 +208,7 @@ namespace ITGlobal.Fountain.Parser
             var description = property.GetCustomAttribute<DocumentationAttribute>();
             var jsonName = property.GetCustomAttribute<JsonNameAttribute>();
             var mayBeMissingAttribute = property.GetCustomAttribute<MayBeMissingAttribute>();
-            var canBeNull = property.GetCustomAttribute<CanBeNullAttribute>() != null;
+            var canBeNull = property.GetCustomAttribute<NullableAttribute>() != null;
             var typeDesc = ParseTypeDesc(property.PropertyType);
             
             return new ContractFieldDesc
@@ -313,7 +313,7 @@ namespace ITGlobal.Fountain.Parser
 
         private bool IsNullable(Type t)
         {
-            var canBeNullAttribute = t.GetCustomAttribute<CanBeNullAttribute>();
+            var canBeNullAttribute = t.GetCustomAttribute<NullableAttribute>();
             return canBeNullAttribute != null || Nullable.GetUnderlyingType(t) != null;
         }
     }

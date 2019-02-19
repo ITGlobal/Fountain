@@ -72,39 +72,44 @@ public {{prop_type}} {{name}} { get; set; }");
                     switch (t.Type)
                     {
                         case PrimitiveDesc.Primitives.BOOLEAN:
-                            ptype = "bool";
+                            ptype = nullableType("bool");
                             break;
                         case PrimitiveDesc.Primitives.INT:
-                            ptype = "int";
+                            ptype = nullableType("int");
                             break;
                         case PrimitiveDesc.Primitives.LONG:
-                            ptype = "long";
+                            ptype = nullableType("long");
                             break;
                         case PrimitiveDesc.Primitives.DECIMAL:
-                            ptype = "decimal";
+                            ptype = nullableType("decimal");
                             break;
                         case PrimitiveDesc.Primitives.FLOAT:
-                            ptype = "float";
+                            ptype = nullableType("float");
                             break;
                         case PrimitiveDesc.Primitives.USHORT:
-                            ptype = "ushort";
+                            ptype = nullableType("ushort");
                             break;
                         case PrimitiveDesc.Primitives.STRING:
                             ptype = "string";
                             break;
                         case PrimitiveDesc.Primitives.DATETIME:
-                            ptype = "DateTime";
+                            ptype = nullableType("DateTime");
                             break;
                         case PrimitiveDesc.Primitives.BYTE:
-                            ptype = "byte";
+                            ptype = nullableType("byte");
                             break;
                         default:
                             throw new BuilderException("unknow primitive type");
                     }
 
-                    return isNullable ? $"{ptype}?" : ptype;
+                    return ptype;
                 default:
                     return typeof(object).Name;
+            }
+
+            string nullableType(string ptype)
+            {
+                return isNullable ? $"{ptype}?" : ptype;
             }
         }
 
