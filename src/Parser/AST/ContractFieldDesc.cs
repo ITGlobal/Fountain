@@ -14,5 +14,6 @@ namespace ITGlobal.Fountain.Parser
         [CanBeNull] public string JsonName { get; set; }
         public ITypeDesc Type { get; set; }
         public IEnumerable<IFieldValidation> Validation { get; set; }
+        public string Example { get; set; }
     }
 }

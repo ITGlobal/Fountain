@@ -23,6 +23,9 @@ namespace ITGlobal.Fountain.Builder.Csharp
 /// {{ description }}
 /// </summary>
 {{~ end ~}}
+{{~ if example ~}}
+/// <example>{{ example }}</example>
+{{~ end ~}}
 {{~ if is_deprecated ~}}
 [Obsolete(""{{ deprecation_cause }}"")]
 {{~ end ~}}
@@ -44,6 +47,7 @@ public {{prop_type}} {{name}} { get; set; }");
             {
                 fieldDesc.IsDeprecated,
                 fieldDesc.Description,
+                fieldDesc.Example,
                 Name = _options.FieldNamingStrategy.GetPropertyName(fieldDesc.Name, false),
                 fieldDesc.DeprecationCause,
                 JsonProperty = fieldDesc.JsonName,

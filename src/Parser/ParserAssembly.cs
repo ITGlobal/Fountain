@@ -218,6 +218,7 @@ namespace ITGlobal.Fountain.Parser
                 DeprecationCause = deprecation?.Cause,
                 MayBeMissing = mayBeMissingAttribute != null,
                 Description = description?.Text,
+                Example = description?.Example,
                 JsonName = jsonName?.Name,
                 // if property marked by CanBeNull attribute, but property type isn't nullable, create NullableDesc
                 Type = canBeNull && !(typeDesc is NullableDesc) ? new NullableDesc { ElementType = typeDesc } : typeDesc,

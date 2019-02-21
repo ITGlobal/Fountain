@@ -11,5 +11,6 @@ namespace ITGlobal.Fountain.Annotations
         }
 
         public string Text { get; }
+        public string Example { get; set; }
     }
 }
