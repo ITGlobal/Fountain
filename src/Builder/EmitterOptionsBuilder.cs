@@ -26,6 +26,7 @@ namespace ITGlobal.Fountain.Builder
         public abstract void SetParser();
         public abstract void SetContractEnumStringify();
         public abstract void SetEnumFieldStringify();
+        public abstract void SetContractGenericStringify();
         public abstract TOptions Build();
 
         public TOptions BuildBase(TOptions options)
@@ -46,6 +47,7 @@ namespace ITGlobal.Fountain.Builder
             options.Parser = provider.GetService<IParserAssembly>();
             options.ContractEnumStringify = provider.GetService<IContractEnumStringify>();
             options.EnumFieldStringify = provider.GetService<IEnumFieldStringify>();
+            options.ContractGenericStringify = provider.GetService<IContractGenericStringify>();
 
             return options;
         }
@@ -89,6 +91,11 @@ namespace ITGlobal.Fountain.Builder
         public void SetEnumFieldStringify<T>() where T : class, IEnumFieldStringify
         {
             _serviceCollection.AddSingleton<IEnumFieldStringify, T>();
+        }
+
+        public void SetContractGenericStringify<T>() where T : class, IContractGenericStringify
+        {
+            _serviceCollection.AddSingleton<IContractGenericStringify, T>();
         }
     }
 }

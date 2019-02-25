@@ -51,6 +51,11 @@ namespace ITGlobal.Fountain.Builder.Typescript
             SetEnumFieldStringify<TypescriptEnumFieldStringify>();
         }
 
+        public override void SetContractGenericStringify()
+        {
+            SetContractGenericStringify<TypescriptContractGenericStringify>();
+        }
+
         public override TypescriptEmitterOptions Build()
         {
             _serviceCollection.AddSingleton<TypescriptJsDocComments>();

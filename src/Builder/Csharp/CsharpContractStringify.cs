@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using ITGlobal.Fountain.Parser;
 using Scriban;
@@ -24,7 +25,7 @@ namespace ITGlobal.Fountain.Builder.Csharp
 {{~ if is_deprecated ~}}
 [Obsolete(""{{ deprecation_cause }}"")]
 {{~ end ~}}
-public {{ if can_be_partial }}partial {{ end }}class {{ class_name }} {
+public {{ if can_be_partial }}partial {{ end }}class {{ class_name }}{{ if has_base }}: {{ base_class }}{{ end }} {
 
 {{~ for field in fields ~}}
 {{ field | ident }}
@@ -35,6 +36,7 @@ public {{ if can_be_partial }}partial {{ end }}class {{ class_name }} {
         
         public string Stringify(ContractDesc contractDesc)
         {
+            var baseClass = contractDesc.Base == null ? null : _fieldStringify.FieldTypeStringify(contractDesc.Base);
             return _template.Render(_contextMaker.Make(new
             {
                 contractDesc.Description,
@@ -43,6 +45,8 @@ public {{ if can_be_partial }}partial {{ end }}class {{ class_name }} {
                 ClassName = _options.ContractNameTempate(contractDesc),
                 Fields = contractDesc.Fields.Select(_fieldStringify.Stringify),
                 contractDesc.CanBePartial,
+                HasBase = contractDesc.Base != null, 
+                BaseClass = baseClass, 
             }));
         }
     }

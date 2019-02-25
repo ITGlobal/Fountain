@@ -16,6 +16,7 @@ namespace ITGlobal.Fountain.Builder
         [NotNull] IContractFieldStringify FieldStringify { get; set; }
         [NotNull] IContractStringify ContractStringify { get; set; }
         [NotNull] IContractEnumStringify ContractEnumStringify { get; set; }
+        [NotNull] IContractGenericStringify ContractGenericStringify { get; set; }
         [NotNull] IEnumFieldStringify EnumFieldStringify { get; set; }
         [NotNull] IParserOptions ParserOptions { get; set; }
         [NotNull] IParserAssembly Parser { get; set; }

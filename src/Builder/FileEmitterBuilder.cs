@@ -12,6 +12,7 @@ namespace ITGlobal.Fountain.Builder
             builder.SetParser();
             builder.SetEnumFieldStringify();
             builder.SetContractEnumStringify();
+            builder.SetContractGenericStringify();
             return new FileEmitter<TOptions>(builder.Build());
         }
     }

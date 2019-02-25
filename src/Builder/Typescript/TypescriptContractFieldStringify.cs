@@ -31,7 +31,7 @@ namespace ITGlobal.Fountain.Builder.Typescript
             return fieldDesc.MayBeMissing ? "?" : "";
         }
 
-        private string FieldTypeStringify(ITypeDesc type)
+        public string FieldTypeStringify(ITypeDesc type, bool isNullable = false)
         {
             switch (type)
             {

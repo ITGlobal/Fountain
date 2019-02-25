@@ -12,5 +12,6 @@ namespace ITGlobal.Fountain.Builder
         void SetParser<T>() where T : class, IParserAssembly;
         void SetContractEnumStringify<T>() where T : class, IContractEnumStringify;
         void SetEnumFieldStringify<T>() where T : class, IEnumFieldStringify;
+        void SetContractGenericStringify<T>() where T : class, IContractGenericStringify;
     }
 }

@@ -57,7 +57,7 @@ public {{prop_type}} {{name}} { get; set; }");
             });
         }
         
-        private string FieldTypeStringify(ITypeDesc type, bool isNullable = false)
+        public string FieldTypeStringify(ITypeDesc type, bool isNullable = false)
         {
             switch (type)
             {
@@ -65,6 +65,10 @@ public {{prop_type}} {{name}} { get; set; }");
                     return FieldTypeStringify(t.ElementType, true);
                 case ContractDesc t:
                     return _options.ContractNameTempate(t);
+                case ConstructedGenericDesc t:
+                    return $"{_options.ContractNameTempate(t)}<{GenericArgsStringify(t.Arguments)}>";
+                case GenericParametrDesc t:
+                    return t.Name;
                 case ContractEnumDesc t:
                     return _options.ContractNameTempate(t);
                 case ArrayDesc t:
@@ -115,6 +119,11 @@ public {{prop_type}} {{name}} { get; set; }");
             {
                 return isNullable ? $"{ptype}?" : ptype;
             }
+        }
+
+        private string GenericArgsStringify(IEnumerable<ITypeDesc> args)
+        {
+            return string.Join(", ", args.Select((t) => FieldTypeStringify(t)));
         }
 
         private string ValidationStringify(IFieldValidation validation)

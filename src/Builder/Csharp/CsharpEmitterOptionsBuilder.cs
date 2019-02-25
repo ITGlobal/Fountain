@@ -51,6 +51,11 @@ namespace ITGlobal.Fountain.Builder.Csharp
             SetEnumFieldStringify<CsharpEnumFieldStringify>();
         }
 
+        public override void SetContractGenericStringify()
+        {
+            SetContractGenericStringify<CsharpContractGenericStringify>();
+        }
+
         public override CsharpEmitterOptions Build()
         {
             _serviceCollection.AddSingleton<CsharpTemplateContext>();

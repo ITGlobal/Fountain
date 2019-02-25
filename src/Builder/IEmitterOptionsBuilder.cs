@@ -9,8 +9,9 @@ namespace ITGlobal.Fountain.Builder
         void SetParserOptions();
         void SetParser();
         void SetContractEnumStringify();
-        void SetEnumFieldStringify();
         
+        void SetEnumFieldStringify();
+        void SetContractGenericStringify();
 
         TOptions Build();
     }

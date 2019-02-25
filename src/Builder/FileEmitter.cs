@@ -50,6 +50,8 @@ namespace ITGlobal.Fountain.Builder
                         contractStr = _options.ContractStringify.Stringify(cd);
                     if (contract is ContractEnumDesc ed)
                         contractStr = _options.ContractEnumStringify.Stringify(ed);
+                    if (contract is GenericDesc gd)
+                        contractStr = _options.ContractGenericStringify.Stringify(gd);
                     if (!string.IsNullOrWhiteSpace(contractStr))
                     {
                         buffer.Add(_options.ManyContractsWrapper.WrapOne(contractStr));
@@ -85,7 +87,8 @@ namespace ITGlobal.Fountain.Builder
                         contractStr = _options.ContractStringify.Stringify(cd);
                     if (contract is ContractEnumDesc ed)
                         contractStr = _options.ContractEnumStringify.Stringify(ed);
-
+                    if (contract is GenericDesc gd)
+                        contractStr = _options.ContractGenericStringify.Stringify(gd);
                     if (!string.IsNullOrWhiteSpace(contractStr))
                     {
                         var wrappedStr = _options.PerFileContractWrapper.Wrap(contractStr, group.Key, contract);

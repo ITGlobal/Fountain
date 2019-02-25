@@ -32,6 +32,12 @@ namespace ITGlobal.Fountain.Parser
         private readonly ConcurrentDictionary<string, ContractEnumDesc> _enumCache
             = new ConcurrentDictionary<string, ContractEnumDesc>();
         
+        private readonly ConcurrentDictionary<string, ConstructedGenericDesc> _constructedGenericCache
+            = new ConcurrentDictionary<string, ConstructedGenericDesc>();
+        
+        private readonly ConcurrentDictionary<string, GenericDesc> _genericCache
+            = new ConcurrentDictionary<string, GenericDesc>();
+        
         #endregion
         
         public virtual ContractGroup Parse(Assembly assembly)
@@ -69,19 +75,6 @@ namespace ITGlobal.Fountain.Parser
                 var docAttr = attrs.FirstOrDefault(_ => _ is DocumentationAttribute) as DocumentationAttribute;
                 var deprecatedAttribute = attrs.FirstOrDefault(_ => _ is DeprecatedAttribute) as DeprecatedAttribute;
                 var contractAttribute = attrs.FirstOrDefault(_ => _ is ContractAttribute) as ContractAttribute;
-                var isGeneric = t.IsGenericType;
-
-                if (isGeneric)
-                {
-                    return new GenericDesc
-                    {
-                        Name = t.Name.Split('`')[0],
-                        IsDeprecated = deprecatedAttribute != null,
-                        DeprecationCause = deprecatedAttribute?.Cause,
-                        Description = docAttr?.Text,
-                        CanBePartial = contractAttribute?.CanBePartial ?? false,
-                    };
-                }
                 
                 return new ContractDesc
                 {
@@ -97,6 +90,50 @@ namespace ITGlobal.Fountain.Parser
             });
         }
         
+        private ConstructedGenericDesc ConstructedGeneric(Type t)
+        {
+            return _constructedGenericCache.GetOrAdd(t.FullName, s =>
+            {
+                return new ConstructedGenericDesc()
+                {
+                    Name = t.Name.Split('`')[0],
+                    Arguments = t.GetGenericArguments().Select(ParseTypeDesc)
+                };
+            });
+        }
+        
+        private GenericDesc Generic(Type t)
+        {
+            return _genericCache.GetOrAdd(t.FullName, s =>
+            {
+                var attrs = t.GetCustomAttributes().Where(_ => _ is IBaseAttribute);
+                var docAttr = attrs.FirstOrDefault(_ => _ is DocumentationAttribute) as DocumentationAttribute;
+                var deprecatedAttribute = attrs.FirstOrDefault(_ => _ is DeprecatedAttribute) as DeprecatedAttribute;
+                var contractAttribute = attrs.FirstOrDefault(_ => _ is ContractAttribute) as ContractAttribute;
+            
+                return new GenericDesc
+                {
+                    Name = t.Name.Split('`')[0],
+                    IsDeprecated = deprecatedAttribute != null,
+                    DeprecationCause = deprecatedAttribute?.Cause,
+                    Description = docAttr?.Text,
+                    CanBePartial = contractAttribute?.CanBePartial ?? false,
+                    Arguments = t.GetGenericArguments().Select(GenericParametr),
+                    Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _),
+                    Fields = ParseContractFields(t),
+                };
+            });
+        }
+
+        private GenericParametrDesc GenericParametr(Type t)
+        {
+            return new GenericParametrDesc()
+            {
+                Name = t.Name,
+            };
+        }
+
+
         public virtual ITypeDesc Primitive(PrimitiveDesc.Primitives type)
         {
             return _primitiveTypesCache.GetOrAdd(PrimitiveDesc.GetName(type), key => new PrimitiveDesc(type));
@@ -182,7 +219,17 @@ namespace ITGlobal.Fountain.Parser
         [CanBeNull]
         public virtual ITypeDesc ParseContractBase(Type t)
         {
-            if (t.BaseType != null && t.BaseType.GetCustomAttribute<ContractAttribute>() == null)
+            if (t.BaseType == null)
+            {
+                return null;
+            }
+
+            if (t.BaseType.IsAbstract)
+            {
+                return null;
+            }
+            
+            if (t.BaseType.GetCustomAttribute<ContractAttribute>() == null)
             {
                 return null;
             }
@@ -296,12 +343,24 @@ namespace ITGlobal.Fountain.Parser
                 {
                     return Dictionary(t);
                 }
+
+                return ConstructedGeneric(t);
             }
 
+            if (t.IsGenericParameter)
+            {
+                return GenericParametr(t);
+            }
+            
             var contractAttr = t.GetCustomAttribute<ContractAttribute>();
             if (contractAttr == null)
             {
                 return new AnyDesc();
+            }
+            
+            if (t.IsGenericType)
+            {
+                return Generic(t);
             }
 
             if (t.IsEnum)
@@ -311,6 +370,7 @@ namespace ITGlobal.Fountain.Parser
             
             return Contract(t);
         }
+
 
         private bool IsNullable(Type t)
         {
