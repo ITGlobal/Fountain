@@ -1,6 +1,13 @@
 # Fountain
 Code generation library for contracts
 
+[![Build status](https://ci.appveyor.com/api/projects/status/7lplwn0fsismdm0f?svg=true)](https://ci.appveyor.com/project/itgloballlc/fountain)
+
+Nuget
+* ITGlobal.Fountain.Builder <br> [![ITGlobal.Fountain.Builder](https://img.shields.io/nuget/v/ITGlobal.Fountain.Builder.svg)](https://www.nuget.org/packages/ITGlobal.Fountain.Builder/)
+* ITGlobal.Fountain.Parser <br> [![ITGlobal.Fountain.Parser](https://img.shields.io/nuget/v/ITGlobal.Fountain.Parser.svg)](https://www.nuget.org/packages/ITGlobal.Fountain.Parser/)
+* ITGlobal.Fountain.Annotations <br> [![ITGlobal.Fountain.Annotations](https://img.shields.io/nuget/v/ITGlobal.Fountain.Annotations.svg)](https://www.nuget.org/packages/ITGlobal.Fountain.Annotations/)
+
 ## Install
 
 ## Usage
