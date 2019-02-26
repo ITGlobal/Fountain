@@ -7,7 +7,8 @@ namespace ITGlobal.Fountain.Builder {
     {
         public static string Ident(string str, int ident) {
             var identstr = string.Concat(Enumerable.Repeat(" ", ident));
-            return identstr + str.Replace(Environment.NewLine, Environment.NewLine + identstr);
+            var normalized = str.Replace("\n\r", "\n");
+            return identstr + normalized.Replace("\n", "\n" + identstr);
         }
 
         public static string Capitalize(string str)
