@@ -3,6 +3,12 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RootNamespace>ITGlobal.Fountain.Parser</RootNamespace>
+        <PackageId>ITGlobal.Fountain.Parser</PackageId>
+        <Authors>ITGlobal</Authors>
+        <PackageProjectUrl>https://github.com/ITGlobal/Fountain</PackageProjectUrl>
+        <PackageLicense>https://github.com/ITGlobal/Fountain/blob/master/LICENSE</PackageLicense>
+        <RepositoryUrl>https://github.com/ITGlobal/Fountain</RepositoryUrl>
+        <PackageTags>contracts, parser, codegenerator</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>

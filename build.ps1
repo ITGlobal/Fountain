@@ -55,13 +55,28 @@ if ($LASTEXITCODE -ne 0) {
 
 # PACK
 write-host "< pack >" -f cyan
-& dotnet pack /nologo -v q -c $CONFIGURATION /p:Version=$VERSION --include-symbols --include-source `
-    --no-restore --output $ARTIFACTS ./src/Builder/Builder.csproj
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "`"dotnet pack`" failed with $LASTEXITCODE"
-    exit $LASTEXITCODE
+
+function pack {
+    [CmdletBinding()]
+    param (
+        $output,
+        $csprojPath
+    )
+    
+    Write-Host "Pack for: $csprojPath"
+
+    & dotnet pack /nologo -v q -c $CONFIGURATION /p:Version=$VERSION --include-symbols --include-source `
+    --no-restore --output $output $csprojPath
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "`"dotnet pack`" failed with $LASTEXITCODE"
+        exit $LASTEXITCODE
+    }
+    Write-Host "Generated packages:"
+    Get-ChildItem $output -file -filter *.nupkg | ForEach-Object { write-host "`t$($_.Name)"}
 }
-Write-Host "Generated packages:"
-Get-ChildItem $ARTIFACTS -file -filter *.nupkg | ForEach-Object { write-host "`t$($_.Name)"}
+
+pack $(Join-Path $ARTIFACTS /Builder) ./src/Builder/Builder.csproj
+pack $(Join-Path $ARTIFACTS /Annotations) ./src/Annotations/Annotations.csproj
+pack $(Join-Path $ARTIFACTS /Parser) ./src/Parser/Parser.csproj
 
 Write-Host "Completed" -f Green
