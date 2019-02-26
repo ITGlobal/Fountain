@@ -21,7 +21,7 @@ write-host "Dropped build output"
 
 # VERSION
 write-host "< version >" -f cyan
-$VERSION = "0.0.0-dev"
+$VERSION = "0.0.0"
 
 if ((git tag | measure).Count -eq 0) {
     write-host "there are no tags! Will use '$VERSION' as version number" -f red    
