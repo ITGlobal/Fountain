@@ -3,6 +3,12 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RootNamespace>ITGlobal.Fountain.Builder</RootNamespace>
+        <PackageId>ITGlobal.Fountain.Builder</PackageId>
+        <Authors>ITGlobal</Authors>
+        <PackageProjectUrl>https://github.com/ITGlobal/Fountain</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/ITGlobal/Fountain/blob/master/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/ITGlobal/Fountain</RepositoryUrl>
+        <PackageTags>contracts, builder, typescript, codegenerator</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
