@@ -6,7 +6,7 @@
         <PackageId>ITGlobal.Fountain.Builder</PackageId>
         <Authors>ITGlobal</Authors>
         <PackageProjectUrl>https://github.com/ITGlobal/Fountain</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/ITGlobal/Fountain/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageLicense>https://github.com/ITGlobal/Fountain/blob/master/LICENSE</PackageLicense>
         <RepositoryUrl>https://github.com/ITGlobal/Fountain</RepositoryUrl>
         <PackageTags>contracts, builder, typescript, codegenerator</PackageTags>
     </PropertyGroup>
