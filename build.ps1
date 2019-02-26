@@ -34,8 +34,7 @@ if ($env:APPVEYOR) {
     if($env:APPVEYOR_REPO_TAG -eq "true") {
         $VERSION = $env:APPVEYOR_REPO_TAG_NAME
     } else {
-        $lastcommit =$(git log -n 1 --pretty=format:%h)
-        $VERSION = "$env:APPVEYOR_REPO_BRANCH-$lastcommit+$env:APPVEYOR_BUILD_NUMBER"
+        $VERSION = "$VERSION-$env:APPVEYOR_REPO_BRANCH+$env:APPVEYOR_BUILD_NUMBER"
     }
 }
 
