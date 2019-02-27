@@ -9,30 +9,76 @@ Nuget
 * ITGlobal.Fountain.Annotations <br> [![ITGlobal.Fountain.Annotations](https://img.shields.io/nuget/v/ITGlobal.Fountain.Annotations.svg)](https://www.nuget.org/packages/ITGlobal.Fountain.Annotations/)
 
 ## Usage
-Create contract.
+Create contracts.
 ```C#
-[Contract('product', 'PUBLIC')]
+[Contract("product", "PUBLIC")]
 [Documentation("some description for contract")]
 public class Product: MetadataObject
 {
-    [Documentation("Код продукта")]
-    [Required('ON_SERVER')]
-    [ContractField('PUBLIC')]
+    [Documentation("Product Code")]
+    [Required("ON_SERVER")]
+    [ContractField("PUBLIC")]
     public string Code { get; set; }
 
-    [Documentation("Название продукта")]
-    [ContractField('PUBLIC')]
-    [Required('ON_SERVER')]
+    [Documentation("Product Name")]
+    [ContractField("PUBLIC")]
+    [Required("ON_SERVER")]
     public LocalizedText Name { get; set; }
 
-    [Documentation("Таблица цен по регионам для продукта за месяц")]
-    [ContractField('MANAGER')]
+    [Documentation("Product prices table")]
+    [ContractField("MANAGER")]
     public Dictionary<PriceRegion, PriceDefenition> Prices { get; set; }
 }
+
+// abstract classes don't emit
+[Contract("common", "PUBLIC")]
+[Documentation("Метаданные")]
+public abstract class MetadataObject
+
+{
+    [Documentation("Id")]
+    [ContractField("PUBLIC"), Nullable]
+    public string Id { get; set; }
+    
+    [Documentation("Some metadata")]
+    [JsonProperty("$metadata")]
+    [ContractField("PUBLIC")]
+    [Nullable]
+    public Dictionary<string, object> Metadata { get; set; }
+}
+
+[Contract("product", "MANAGER")]
+[Documentation("Price regions")]
+public enum PriceRegion
+{
+    [Documentation("Россия")]
+    [JsonName("RUSSIA")]
+    [ContractField("MANAGER")]
+    RUSSIA,
+    
+    [Documentation("США")]
+    [JsonName("USA")]
+    [ContractField("MANAGER")]
+    USA,
+}
+
+[Contract("product", "MANAGER")]
+[Documentation("Some description of price definition")]
+public class PriceDefenition
+{
+    [Documentation("Price")]
+    [ContractField("MANAGER")]
+    public float Price { get; set; }
+
+    [Documentation("Price Currency")]
+    [ContractField("MANAGER")]
+    public string Currency { get; set; }
+}
 ``` 
-`[Contract('product', 'PUBLIC')]` - this means that `Product` contract belongs to `product` group and has `PUBLIC` permission.
-`[ContractField('PUBLIC')]` - this means that field is an contract field and belongs to `Product` contract.
-`[Required('ON_SERVER')]` - this means that field required on server when server execute validation.
+`[Contract("product", "PUBLIC")]` - this means that `Product` contract belongs to `product` group and has `PUBLIC` permission.
+`[ContractField("PUBLIC")]` - this means that field is an contract field and belongs to `Product` contract.
+`[Required("ON_SERVER")]` - this means that field required on server when server execute validation.
+`[JsonName("USA")]` - this defines how the field is called during serialization.
 
 Emit contracts for typescript and C#
 ```C#
@@ -43,6 +89,10 @@ FileEmitterBuilder.Build(new TypescriptEmitterOptionsBuilder())
     .SetupOptions(options => {
         // Filename or FileTemplate option required
         options.Filename = "contracts.d.ts";
+        // filter only public contracts
+        options.ParserOptions.FilterContracts = attr => attr.Permission == "PUBLIC";
+        // filter only public fields
+        options.ParserOptions.FilterFields = attr => attr.Permission == "PUBLIC";
     })
     .Emit("path/to/typescript/output/folder", assebly);
 // emit C# contracts with default settings
@@ -50,8 +100,61 @@ FileEmitterBuilder.Build(new CsharpEmitterOptionsBuilder())
     .SetupOptions(options => {
         // Filename or FileTemplate option required
         options.Filename = "Contracts.cs";
+        // filter only public contracts
+        options.ParserOptions.FilterContracts = attr => attr.Permission == "PUBLIC";
+        // filter only public fields
+        options.ParserOptions.FilterFields = attr => attr.Permission == "PUBLIC";
     })
     .Emit("path/to/C#/output/folder", assebly);
+```
+
+Result in `contracts.d.ts`
+```typescript
+// todo
+```
+
+Result in `Contracts.cs`
+```C#
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.ComponentModel.DataAnnotations;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace ITGlobal.Promise.RestAPI.Contracts.Mgr {
+    /// <summary>
+    /// some description for contract
+    /// </summary>
+    public class ProductContract {
+
+        /// <summary>
+        /// Product Code
+        /// </summary>
+        [Required]
+        public string Code { get; set; }
+
+        /// <summary>
+        /// Product Name
+        /// </summary>
+        [Required]
+        public LocalizedText Name { get; set; }
+
+        /// <summary>
+        /// Id
+        /// </summary>
+        [CanBeNull]
+        public string Id { get; set; }
+
+        /// <summary>
+        /// Some metadata
+        /// </summary>
+        [CanBeNull]
+        public Dictionary<string, Object> Metadata { get; set; }
+
+    }
+}
 ```
 
 ## Options
