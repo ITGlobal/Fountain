@@ -34,7 +34,7 @@ public class Product: MetadataObject
 `[ContractField('PUBLIC')]` - this means that field is an contract field and belongs to `Product` contract.
 `[Required('ON_SERVER')]` - this means that field required on server when server execute validation.
 
-Emit contracts for typescript
+Emit contracts for typescript and C#
 ```C#
 // get assemly with contracts
 var assebly = typeof(Product).Assembly;
