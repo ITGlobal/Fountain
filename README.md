@@ -123,7 +123,7 @@ using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace ITGlobal.Promise.RestAPI.Contracts.Mgr {
+namespace Contracts {
     /// <summary>
     /// some description for contract
     /// </summary>
