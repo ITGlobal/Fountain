@@ -41,6 +41,9 @@ namespace ITGlobal.Fountain.Builder.Csharp
 {{~ for v in validations ~}}
 {{ v }}
 {{~ end ~}}
+{{~ for c in custom_attrs ~}}
+[{{ c }}]
+{{~ end ~}}
 public {{prop_type}} {{name}} { get; set; }");
         }
         
@@ -57,7 +60,8 @@ public {{prop_type}} {{name}} { get; set; }");
                 QueryName = fieldDesc.QueryName,
                 IsNullable = fieldDesc.Type is NullableDesc,
                 PropType = FieldTypeStringify(fieldDesc.Type),
-                Validations = fieldDesc.Validation.Select(ValidationStringify)
+                Validations = fieldDesc.Validation.Select(ValidationStringify),
+                CustomAttrs = fieldDesc.CustomAttributes.Select(_ => _.AttributeStr)
             });
         }
         

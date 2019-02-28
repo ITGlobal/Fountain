@@ -16,5 +16,10 @@ namespace ITGlobal.Fountain.Builder.Csharp
         /// set namespace name for one file mode
         /// </summary>
         [NotNull] public string CsharpNamespaceOneFile { get; set; } = "Contracts";
+
+        /// <summary>
+        /// add custom using declarations
+        /// </summary>
+        [CanBeNull] public string CsharpAddUsing { get; set; }
     }
 }

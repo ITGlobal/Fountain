@@ -14,5 +14,6 @@ namespace ITGlobal.Fountain.Parser
         public string DeprecationCause { get; set; }
         public Dictionary<string, Attribute> Metadata { get; set; }
         public bool CanBePartial { get; set; }
+        public IEnumerable<CustomAttibuteDesc> CustomAttributes { get; set; }
     }
 }

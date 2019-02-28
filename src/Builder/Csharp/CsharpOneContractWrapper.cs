@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+{{~ add_using }} 
 
 namespace {{ namespace }} {
 {{ contract | ident }}
@@ -33,7 +34,8 @@ namespace {{ namespace }} {
                 _contextMaker.Make(new
                 {
                     Namespace = _options.CsharpNamespaceTemplatePerFile(group, contract),
-                    Contract = str
+                    Contract = str,
+                    AddUsing = _options.CsharpAddUsing,
                 })
             );
         }

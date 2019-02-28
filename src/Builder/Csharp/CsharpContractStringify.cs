@@ -25,6 +25,9 @@ namespace ITGlobal.Fountain.Builder.Csharp
 {{~ if is_deprecated ~}}
 [Obsolete(""{{ deprecation_cause }}"")]
 {{~ end ~}}
+{{~ for c in custom_attrs ~}}
+[{{ c }}]
+{{~ end ~}}
 public {{ if can_be_partial }}partial {{ end }}class {{ class_name }}{{ if has_base }}: {{ base_class }}{{ end }} {
 
 {{~ for field in fields ~}}
@@ -46,7 +49,8 @@ public {{ if can_be_partial }}partial {{ end }}class {{ class_name }}{{ if has_b
                 Fields = contractDesc.Fields.Select(_fieldStringify.Stringify),
                 contractDesc.CanBePartial,
                 HasBase = contractDesc.Base != null, 
-                BaseClass = baseClass, 
+                BaseClass = baseClass,
+                CustomAttrs = contractDesc.CustomAttributes.Select(_ => _.AttributeStr)
             }));
         }
     }

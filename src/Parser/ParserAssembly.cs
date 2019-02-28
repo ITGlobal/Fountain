@@ -86,6 +86,11 @@ namespace ITGlobal.Fountain.Parser
                     DeprecationCause = deprecatedAttribute?.Cause,
                     Metadata = attrs.ToDictionary(_ => _.GetType().Name, _ => _),
                     CanBePartial = contractAttribute?.CanBePartial ?? false,
+                    CustomAttributes = t.GetCustomAttributes<EmitAttributeAttribute>().Select(_ => new CustomAttibuteDesc
+                    {
+                        AttributeStr = _.AttributeStr,
+                        Destination = _.Destination,
+                    }).Where(_ => _options.CustomAttrDestinationFilter(_.Destination)),
                 };
             });
         }
@@ -272,7 +277,12 @@ namespace ITGlobal.Fountain.Parser
                 // if property marked by CanBeNull attribute, but property type isn't nullable, create NullableDesc
                 Type = canBeNull && !(typeDesc is NullableDesc) ? new NullableDesc { ElementType = typeDesc } : typeDesc,
                 Validation = ParseContractOneFieldValidation(property)
-                    .Where(_ => _options.ValidationDestinationFilter(_.Destination))
+                    .Where(_ => _options.ValidationDestinationFilter(_.Destination)),
+                CustomAttributes = property.GetCustomAttributes<EmitAttributeAttribute>().Select(_ => new CustomAttibuteDesc
+                {
+                    AttributeStr = _.AttributeStr,
+                    Destination = _.Destination,
+                }).Where(_ => _options.CustomAttrDestinationFilter(_.Destination)),
             };
         }
 

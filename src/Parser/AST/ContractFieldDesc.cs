@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using ITGlobal.Fountain.Parser.Validation;
 using JetBrains.Annotations;
 
@@ -15,6 +17,7 @@ namespace ITGlobal.Fountain.Parser
         [CanBeNull] public string QueryName { get; set; }
         public ITypeDesc Type { get; set; }
         public IEnumerable<IFieldValidation> Validation { get; set; }
+        public IEnumerable<CustomAttibuteDesc> CustomAttributes { get; set; }
         public string Example { get; set; }
     }
 }
