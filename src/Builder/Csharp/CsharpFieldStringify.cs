@@ -32,6 +32,9 @@ namespace ITGlobal.Fountain.Builder.Csharp
 {{~ if json_property ~}}
 [JsonProperty(""{{ json_property }}"")]
 {{~ end ~}}
+{{~ if query_name ~}}
+[Microsoft.AspNetCore.Mvc.FromQuery(Name = ""{{ query_name }}"")]
+{{~ end ~}}
 {{~ if is_nullable ~}}
 [CanBeNull]
 {{~ end ~}}
@@ -51,6 +54,7 @@ public {{prop_type}} {{name}} { get; set; }");
                 Name = _options.FieldNamingStrategy.GetPropertyName(fieldDesc.Name, false),
                 fieldDesc.DeprecationCause,
                 JsonProperty = fieldDesc.JsonName,
+                QueryName = fieldDesc.QueryName,
                 IsNullable = fieldDesc.Type is NullableDesc,
                 PropType = FieldTypeStringify(fieldDesc.Type),
                 Validations = fieldDesc.Validation.Select(ValidationStringify)

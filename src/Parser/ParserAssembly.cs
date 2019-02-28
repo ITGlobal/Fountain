@@ -254,6 +254,7 @@ namespace ITGlobal.Fountain.Parser
             var deprecation = property.GetCustomAttribute<DeprecatedAttribute>();
             var description = property.GetCustomAttribute<DocumentationAttribute>();
             var jsonName = property.GetCustomAttribute<JsonNameAttribute>();
+            var queryName = property.GetCustomAttribute<QueryAttribute>();
             var mayBeMissingAttribute = property.GetCustomAttribute<MayBeMissingAttribute>();
             var canBeNull = property.GetCustomAttribute<NullableAttribute>() != null;
             var typeDesc = ParseTypeDesc(property.PropertyType);
@@ -267,6 +268,7 @@ namespace ITGlobal.Fountain.Parser
                 Description = description?.Text,
                 Example = description?.Example,
                 JsonName = jsonName?.Name,
+                QueryName = queryName?.Name,
                 // if property marked by CanBeNull attribute, but property type isn't nullable, create NullableDesc
                 Type = canBeNull && !(typeDesc is NullableDesc) ? new NullableDesc { ElementType = typeDesc } : typeDesc,
                 Validation = ParseContractOneFieldValidation(property)

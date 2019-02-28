@@ -12,6 +12,7 @@ namespace ITGlobal.Fountain.Parser
         public string Description { get; set; }
         public bool MayBeMissing { get; set; }
         [CanBeNull] public string JsonName { get; set; }
+        [CanBeNull] public string QueryName { get; set; }
         public ITypeDesc Type { get; set; }
         public IEnumerable<IFieldValidation> Validation { get; set; }
         public string Example { get; set; }
