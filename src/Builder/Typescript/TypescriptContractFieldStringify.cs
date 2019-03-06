@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using ITGlobal.Fountain.Parser;
 
 namespace ITGlobal.Fountain.Builder.Typescript
@@ -41,6 +43,10 @@ namespace ITGlobal.Fountain.Builder.Typescript
                     return $"I{_options.ContractNameTempate(t)}";
                 case ContractEnumDesc t:
                     return $"I{_options.ContractNameTempate(t)}";
+                case ConstructedGenericDesc t:
+                    return $"I{_options.ContractNameTempate(t)}<{GenericArgsStringify(t.Arguments)}>";
+                case GenericParametrDesc t:
+                    return t.Name;
                 case ArrayDesc t:
                     return $"{FieldTypeStringify(t.ElementType)}[]";
                 case DictionaryDesc t:
@@ -66,6 +72,11 @@ namespace ITGlobal.Fountain.Builder.Typescript
                 default:
                     return "any";
             }
+        }
+        
+        private string GenericArgsStringify(IEnumerable<ITypeDesc> args)
+        {
+            return string.Join(", ", args.Select((t) => FieldTypeStringify(t)));
         }
     }
 }
