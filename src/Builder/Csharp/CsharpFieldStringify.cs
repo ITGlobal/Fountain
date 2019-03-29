@@ -78,7 +78,7 @@ public {{prop_type}} {{name}} { get; set; }");
                 case GenericParametrDesc t:
                     return t.Name;
                 case ContractEnumDesc t:
-                    return _options.ContractNameTempate(t);
+                    return nullableType(_options.ContractNameTempate(t));
                 case ArrayDesc t:
                     return $"{FieldTypeStringify(t.ElementType)}[]";
                 case DictionaryDesc t:
